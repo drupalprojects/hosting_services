@@ -1,12 +1,12 @@
 <?php 
 
-require_once('hostmaster_services.services.inc');
-require_once('hostmaster_services.nodeapi.inc');
+require_once('hosting_services.services.inc');
+require_once('hosting_services.nodeapi.inc');
 
 /*
  * Implementation of hook_perm
  */
-function hostmaster_services_perm(){
+function hosting_services_perm(){
   return array( 
     'unsuspend client sites', 'suspend client sites', 'get task', 'create task', 
     'get profile', 'list profiles', 'get platform', 'list platforms',

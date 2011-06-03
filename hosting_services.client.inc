@@ -19,7 +19,7 @@ function save_client_access($email, $name){
 /*
  * Perform client.get
  */
-function hostmaster_services_client($email){
+function hosting_services_client($email){
 	watchdog('Aegir Services', 'Looking up client with email:'.$email);
 	if(db_result(db_query("SELECT COUNT(*) FROM {hosting_client} WHERE email = '%s'", $email)) !== 0){
 		watchdog('Aegir Services', 'Located user matching the provided email '.$email);

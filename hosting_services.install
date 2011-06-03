@@ -3,8 +3,8 @@
 /*
  * Aegir Services Schema
  */
-function hostmaster_services_schema(){
-  $schema['hostmaster_services_platforms'] = array(
+function hosting_services_schema(){
+  $schema['hosting_services_platforms'] = array(
     'description' => t('States whether or not this platform can be used to create a site via services api'),
     'fields' => array(
       'vid' => array(

@@ -3,5 +3,5 @@ dependencies[] = hosting_platform
 dependencies[] = hosting_site
 dependencies[] = services
 description = "Provides Services API integration for Hostmaster system."
-name = "Hostmaster Services API"
-package = Hostmaster Plus
+name = "Aegir Services API"
+package = Hosting

@@ -1,23 +1,23 @@
 <?php 
 
 /* Remove _disable and _enable hooks after development */
-function hostmaster_services_disable(){
+function hosting_services_disable(){
 	cache_clear_all('services:methods', 'cache');
 }
 
-function hostmaster_services_enable(){
+function hosting_services_enable(){
 	cache_clear_all('services:methods', 'cache');
 }  //*/
 
 /*
  * Implementation of hook_service
  */
-function hostmaster_services_service(){
+function hosting_services_service(){
     return array(
         // Client Services
         array( /* Create the definition to get a Client remotely from Aegir */
     		'#method' => 'client.get',
-    		'#callback' => 'hostmaster_services_client',
+    		'#callback' => 'hosting_services_client',
     		'#args' => array(
                 array( 
     				'#name' => 'email',
@@ -28,7 +28,7 @@ function hostmaster_services_service(){
     		'#access callback' => 'get_client_access',
     		'#access arguments' => TRUE,
     		'#return' => 'struct',
-    		'#file' => array('file' => 'client.inc', 'module' => 'hostmaster_services'),
+    		'#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
         ),
         array( /* Get a give Client's Sites */
     		'#method' => 'client.sites',
@@ -42,7 +42,7 @@ function hostmaster_services_service(){
                 ),
             ),
     		'#access callback' => 'client_site_access',
-    		'#file' => array('file' => 'client.inc', 'module' => 'hostmaster_services'),
+    		'#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
 		),
 		array(
 			/* Create a new client */
@@ -63,7 +63,7 @@ function hostmaster_services_service(){
 				)
 			),
 			'#access callback' => 'save_client_access',
-			'#file' => array('file' => 'client.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
 			'#return' => 'struct'
 			
 		),
@@ -72,7 +72,7 @@ function hostmaster_services_service(){
 			'#method' => 'client.suspend_sites',
 			'#callback' => 'suspendClientSites',
 			'#access arguments' => array('suspend client sites'),
-			'#file' => array('file' => 'client.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array(
 				'#name' => 'email', 
@@ -92,7 +92,7 @@ function hostmaster_services_service(){
 			'#method' => 'client.unsuspend_sites',
 			'#callback' => 'unsuspendClientSites',
 			'#access arguments' => array('unsuspend client sites'),
-			'#file' => array('file' => 'client.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 							array('#name' => 'email', '#type' => 'string', '#description' => t('Email of the client to disable sites for.') )
 			)
@@ -105,7 +105,7 @@ function hostmaster_services_service(){
 			'#description' => t('Returns the List of Platforms that are available to create new sites on via Services API'),
 			'#access arguments' => array('list platforms'),
 			'#return' => 'array',
-			'#file' => array('file' => 'platform.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array(
 					'#name' => 'row_count',
@@ -127,7 +127,7 @@ function hostmaster_services_service(){
 			'#callback' => 'platformGet',
 			'#access arguments' => array('get platform'),
 			'#description' => t('Get a Platform'),
-			'#file' => array('file' => 'platform.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array(
 					'#name' => 'nid',
@@ -146,7 +146,7 @@ function hostmaster_services_service(){
 			'#callback' => 'profileList',
 			'#description' => t('List all Available Profiles'),
 			'#access arguments' => array('list profiles'),
-			'#file' => array('file' => 'profile.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
 		),
 		array(
 		    // Get Profiles
@@ -154,7 +154,7 @@ function hostmaster_services_service(){
 			'#callback' => 'profileGet',
 			'#description' => t('Get a Profile, Returns also a list of valid Platforms'),
 			'#access arguments' => array('get profile'),
-			'#file' => array('file' => 'profile.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array(
 					'#name' => 'nid',
@@ -170,7 +170,7 @@ function hostmaster_services_service(){
 			'#callback' => 'createTask',
 			'#description' => t('Create an Aegir task'),
 			'#access arguments' => array('create task'),
-			'#file' => array('file' => 'task.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array(
 					'#name' => 'url',
@@ -196,7 +196,7 @@ function hostmaster_services_service(){
 			'#method' => 'task.get',
 			'#callback' => 'getTask',
 			'#description' => t('Get a Task node'),
-			'#file' => array('file' => 'task.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
 			'#access arguments' => array('get task'),
 			'#args' => array(
 				array( '#name' => 'nid', '#type' => 'int', '#description' => t('Node id of the task'))
@@ -208,7 +208,7 @@ function hostmaster_services_service(){
 			'#callback' => 'saveSite',
 			'#description' => t('Site Save'),
 			'#access arguments' => array('save site'),
-			'#file' => array('file' => 'site.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array( '#name' => 'site', '#type' => 'struct', '#description' => t('URL')),
 			)
@@ -218,7 +218,7 @@ function hostmaster_services_service(){
 			'#callback' => 'getSite',
 			'#description' => t('Get Site'),
 			'#access arguments' => array('get site'),
-			'#file' => array('file' => 'site.inc', 'module' => 'hostmaster_services'),
+			'#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
 			'#args' => array(
 				array( '#name' => 'url', '#type' => 'string', '#description' => t('URL')),
 			)
