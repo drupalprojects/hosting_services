@@ -1,0 +1,11 @@
+Installation:
+Installation is simple, you will need to place this into the modules folder like any other
+module.  Enable it.  You will need to use Services API 2.2 with this module in order for it to
+work.  Follow the instructions for Installing Services API.  Additionally it is HIGHLY recommended
+that you enable and use both API keys, and Session ID as a part of using this module.  You should also implement
+the Permissions system when using this module.  You should only enable actions that you feel a perticular api key needs.
+
+This is a server side module only, should be installed on an Aegir site.
+
+Client Side modules should look to the included example at how to accomplish things. My example will be
+of an XMLRPC client, but you can use any of the supported Services API servers with this module. 

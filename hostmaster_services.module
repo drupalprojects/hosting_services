@@ -1,0 +1,19 @@
+<?php 
+
+require_once('hostmaster_services.services.inc');
+require_once('hostmaster_services.nodeapi.inc');
+
+/*
+ * Implementation of hook_perm
+ */
+function hostmaster_services_perm(){
+  return array( 
+    'unsuspend client sites', 'suspend client sites', 'get task', 'create task', 
+    'get profile', 'list profiles', 'get platform', 'list platforms',
+    'list client sites', 'get client', 'load client data', 'save client', 'save site', 'get site'
+  );
+}
+
+// Possibly we may have some sort of need to add a menu later?
+
+?>

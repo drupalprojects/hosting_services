@@ -1,0 +1,6 @@
+core = "6.x"
+dependencies[] = hosting_platform
+dependencies[] = hosting_site
+description = "Provides Services API XMLRPC Client Example."
+name = "Hostmaster Services API XMLRPC Client Example"
+package = Hostmaster Plus
