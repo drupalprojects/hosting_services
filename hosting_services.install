@@ -20,3 +20,17 @@ function hosting_services_schema(){
 	
   return $schema;
 }
+
+/**
+ * Install Hook
+ */
+function hosting_services_install() {
+  drupal_install_schema('hosting_services');
+}
+
+/**
+ * Uninstall Hook
+ */
+function hosting_services_uninstall() {
+  drupal_uninstall_schema('hosting_services');
+}
