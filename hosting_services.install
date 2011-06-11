@@ -1,6 +1,6 @@
 <?php 
 
-/*
+/**
  * Aegir Services Schema
  */
 function hosting_services_schema(){
@@ -14,10 +14,10 @@ function hosting_services_schema(){
       'nid' => array(
         'type' => 'int',
         'not null' => TRUE
-      ),			
-     )
-	);
-	
+      ),
+    )
+  );
+  
   return $schema;
 }
 
