@@ -96,7 +96,7 @@ function hosting_services_service(){
       ),
     ),
     array(
-        // Unsuspend All Sites owned by client
+      // Unsuspend All Sites owned by client
       '#method' => 'client.unsuspend_sites',
       '#callback' => 'unsuspendClientSites',
       '#access arguments' => array('unsuspend client sites'),
