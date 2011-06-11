@@ -3,7 +3,7 @@
 /**
  * Enables Remote Accessible platform listing
  */
-function platformList($rows = 0, $offset = 0){
+function hosting_services_platform_list($rows = 0, $offset = 0){
   
   $platform_query = db_query('SELECT * FROM {node} WHERE type = "platform" ');
   while($plat = db_fetch_object($platform_query)){
@@ -18,7 +18,7 @@ function platformList($rows = 0, $offset = 0){
 /**
  * Returns a specific platform
  */
-function platformGet($nid){
+function hosting_services_platform_get($nid){
   $platform = node_load(array('type'=>'platform', 'nid' => $nid)); 
   return $platform;
 }

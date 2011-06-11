@@ -2,7 +2,7 @@
 /**
  * Creates a task and returns it's node id if successful
  */
-function createTask($sess, $url, $type, $option = array() ){
+function hosting_services_create_task($sess, $url, $type, $option = array() ){
   global $user;
   $node = node_load(array('title' => $url ));
   watchdog('Hostmaster Debug', 'node id => '.$node->nid.' Remote url: '.$url.' Type '.$type);
@@ -37,6 +37,6 @@ function createTask($sess, $url, $type, $option = array() ){
 /**
  * Get task status
  */
-function getTask($nid){
+function hosting_services_get_task($nid){
   return node_load(array('nid' => $nid));    
 }

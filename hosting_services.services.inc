@@ -41,7 +41,7 @@ function hosting_services_service(){
     ),
     array( // Get a given client's sites
       '#method' => 'client.sites',
-      '#callback' => 'hostmaster_service_client_sites',
+      '#callback' => 'hosting_services_client_sites',
       '#args' => array( 
         array(
           '#name' => 'email',  
@@ -56,7 +56,7 @@ function hosting_services_service(){
     array(
       // Create a new client
       '#method' => 'client.save',
-      '#callback' => 'hostmaster_service_client_save',
+      '#callback' => 'hosting_services_client_save',
       '#args' => array(
         array(
           '#name' => 'email',
@@ -78,7 +78,7 @@ function hosting_services_service(){
     array(
         // Suspend All Sites owned by client
       '#method' => 'client.suspend_sites',
-      '#callback' => 'suspendClientSites',
+      '#callback' => 'hosting_services_suspend_client_sites',
       '#access arguments' => array('suspend client sites'),
       '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
       '#args' => array(
@@ -98,7 +98,7 @@ function hosting_services_service(){
     array(
       // Unsuspend All Sites owned by client
       '#method' => 'client.unsuspend_sites',
-      '#callback' => 'unsuspendClientSites',
+      '#callback' => 'hosting_services_unsuspend_client_sites',
       '#access arguments' => array('unsuspend client sites'),
       '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
       '#args' => array(
@@ -113,7 +113,7 @@ function hosting_services_service(){
     array(
       // List Platforms
       '#method' => 'platform.list',
-      '#callback' => 'platformList',
+      '#callback' => 'hosting_services_platform_list',
       '#description' => t('Returns the List of Platforms that are available to create new sites on via Services API'),
       '#access arguments' => array('list platforms'),
       '#return' => 'array',
@@ -135,7 +135,7 @@ function hosting_services_service(){
     ),
     array(
       '#method' => 'platform.get',
-      '#callback' => 'platformGet',
+      '#callback' => 'hosting_services_platform_get',
       '#access arguments' => array('get platform'),
       '#description' => t('Get a Platform'),
       '#file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
@@ -152,7 +152,7 @@ function hosting_services_service(){
     array(
         // List all profiles
       '#method' => 'profile.list',
-      '#callback' => 'profileList',
+      '#callback' => 'hosting_get_profiles',
       '#description' => t('List all Available Profiles'),
       '#access arguments' => array('list profiles'),
       '#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
@@ -160,7 +160,7 @@ function hosting_services_service(){
     array(
         // Get profiles
       '#method' => 'profile.get',
-      '#callback' => 'profileGet',
+      '#callback' => 'hosting_services_profile_get',
       '#description' => t('Get a Profile, Returns also a list of valid Platforms'),
       '#access arguments' => array('get profile'),
       '#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
@@ -176,7 +176,7 @@ function hosting_services_service(){
     // Task Services
     array(
       '#method' => 'task.create',
-      '#callback' => 'createTask',
+      '#callback' => 'hosting_services_create_task',
       '#description' => t('Create an Aegir task'),
       '#access arguments' => array('create task'),
       '#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
@@ -203,7 +203,7 @@ function hosting_services_service(){
     ),
     array(
       '#method' => 'task.get',
-      '#callback' => 'getTask',
+      '#callback' => 'hosting_services_get_task',
       '#description' => t('Get a Task node'),
       '#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
       '#access arguments' => array('get task'),
@@ -214,7 +214,7 @@ function hosting_services_service(){
     // Site services
     array(
       '#method' => 'site.save',
-      '#callback' => 'saveSite',
+      '#callback' => 'hosting_services_save_site',
       '#description' => t('Site Save'),
       '#access arguments' => array('save site'),
       '#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
@@ -224,7 +224,7 @@ function hosting_services_service(){
     ),
     array(
       '#method' => 'site.get',
-      '#callback' => 'getSite',
+      '#callback' => 'hosting_services_get_site',
       '#description' => t('Get Site'),
       '#access arguments' => array('get site'),
       '#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),

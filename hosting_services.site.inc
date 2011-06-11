@@ -3,7 +3,7 @@
 /**
  * Perform site.save
  */
-function saveSite($xtras, $url, $server, $platform, $profile, $client, $site_options, $uid){
+function hosting_services_save_site($xtras, $url, $server, $platform, $profile, $client, $site_options, $uid){
   watchdog('Aegir Remoting', 'xtras:'.$newsite
     .' URL:'.$url
     .' Server:'.$server
@@ -43,7 +43,7 @@ function saveSite($xtras, $url, $server, $platform, $profile, $client, $site_opt
 /**
  * Return aegir's site node
  */
-function getSite($sessid, $url ){
+function hosting_services_get_site($sessid, $url ){
   $site = node_load(array('title' => $url));
   return $site;
 }

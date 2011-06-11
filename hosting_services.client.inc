@@ -39,7 +39,7 @@ function hosting_services_client($email){
 /**
  * Perform client.sites
  */
-function aegir_service_client_sites($email = ''){
+function hosting_services_client_sites($email = ''){
   if(db_result(db_query("SELECT COUNT(*) FROM {hosting_client} WHERE email = '%s'", $email)) > 0){
     $client = db_fetch_object(db_query("SELECT * FROM {hosting_client} WHERE email ='%s'", $email));
     $siteListQry = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
@@ -58,7 +58,7 @@ function aegir_service_client_sites($email = ''){
 /**
  * Create a new client node
  */
-function aegir_service_client_save($email = '', $name ='' ){
+function hosting_services_client_save($email = '', $name ='' ){
   global $user;
   $client->title = $email;
   $client->email_confirm =$email;
@@ -75,7 +75,7 @@ function aegir_service_client_save($email = '', $name ='' ){
  * Suspend client sites
  */
 
-function suspendClientSites($email, $message =''){
+function hosting_services_suspend_client_sites($email, $message =''){
   $client = db_fetch_object(db_query("SELECT * FROM {hosting_client} WHERE email = '%s'", $email));
   $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
   $task->type = 'task';
@@ -97,7 +97,7 @@ function suspendClientSites($email, $message =''){
 /**
  * Unsuspend a clients sites
  */
-function unsuspendClientSites($email){
+function hosting_services_unsuspend_client_sites($email){
   $client = db_fetch_object(db_query("SELECT * FROM {hosting_client} WHERE email = '%s'", $email));
   $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
   $task->type = 'task';
