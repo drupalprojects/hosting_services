@@ -3,7 +3,7 @@
 require_once('hosting_services.services.inc');
 require_once('hosting_services.nodeapi.inc');
 
-/*
+/**
  * Implementation of hook_perm
  */
 function hosting_services_perm(){
@@ -14,6 +14,11 @@ function hosting_services_perm(){
   );
 }
 
-// Possibly we may have some sort of need to add a menu later?
-
-?>
+/**
+ * Placeholder implementation of hook_menu
+ *
+ * TODO Use or remove this hook
+ */
+function hosting_services_menu() {
+  return array();
+}
