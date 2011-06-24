@@ -1,7 +1,5 @@
 <?php 
 
-require_once('hosting_services.nodeapi.inc');
-
 /**
  * Implementation of hook_perm
  */
