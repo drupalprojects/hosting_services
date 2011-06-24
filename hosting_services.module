@@ -1,6 +1,5 @@
 <?php 
 
-require_once('hosting_services.services.inc');
 require_once('hosting_services.nodeapi.inc');
 
 /**
@@ -21,4 +20,281 @@ function hosting_services_perm(){
  */
 function hosting_services_menu() {
   return array();
+}
+
+/**
+ * Implementation of hook_service
+ */
+function hosting_services_service(){
+  return array(
+    // Client Services
+    array( // Create the definition to get a Client remotely from Aegir
+      '#method' => 'client.get',
+      '#callback' => 'hosting_services_client',
+      '#args' => array(
+        array( 
+          '#name' => 'email',
+          '#type' => 'string',
+          '#description' => t('Lookup a client on Aegir, returns Client Node on Success or False on fail.')
+        ),
+      ),
+      '#access callback' => 'get_client_access',
+      '#access arguments' => TRUE,
+      '#return' => 'struct',
+      '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+    ),
+    array( // Get a given client's sites
+      '#method' => 'client.sites',
+      '#callback' => 'hosting_services_client_sites',
+      '#args' => array( 
+        array(
+          '#name' => 'email',  
+          '#type' => 'string', 
+          '#optional' => FALSE,
+          '#description' => t("Returns an Array of the client's sites on Aegir")
+        ),
+      ),
+      '#access callback' => 'client_site_access',
+      '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+    ),
+    array(
+      // Create a new client
+      '#method' => 'client.save',
+      '#callback' => 'hosting_services_client_save',
+      '#args' => array(
+        array(
+          '#name' => 'email',
+          '#type' => 'string',
+          '#optional' => FALSE,
+          '#description' => t('Email Address of the new client'),
+        ),
+        array(
+          '#name' => 'name',
+          '#type' => 'string',
+          '#optional' => FALSE,
+          '#description' => t('Name of the new client')
+        )
+      ),
+      '#access callback' => 'save_client_access',
+      '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      '#return' => 'struct'
+    ),
+    array(
+        // Suspend All Sites owned by client
+      '#method' => 'client.suspend_sites',
+      '#callback' => 'hosting_services_suspend_client_sites',
+      '#access arguments' => array('suspend client sites'),
+      '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'email', 
+          '#type' => 'string', 
+          '#description' => t('Email of the client to disable sites for.') 
+        ),
+        array(
+          '#name' => 'message', 
+          '#type' => 'string', 
+          '#optional' => TRUE,
+          '#description' => t('Reason for Account Suspension')
+        ),
+      ),
+    ),
+    array(
+      // Unsuspend All Sites owned by client
+      '#method' => 'client.unsuspend_sites',
+      '#callback' => 'hosting_services_unsuspend_client_sites',
+      '#access arguments' => array('unsuspend client sites'),
+      '#file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'email', 
+          '#type' => 'string', 
+          '#description' => t('Email of the client to disable sites for.'), 
+        ),
+      ),
+    ),
+    // Platform Services
+    array(
+      // List Platforms
+      '#method' => 'platform.list',
+      '#callback' => 'hosting_services_platform_list',
+      '#description' => t('Returns the List of Platforms that are available to create new sites on via Services API'),
+      '#access arguments' => array('list platforms'),
+      '#return' => 'array',
+      '#file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'row_count',
+          '#type' => 'int',
+          '#description' => t('You can limit the number of returned results to cut down on load time'),
+          '#optional' => TRUE
+        ),
+        array(
+          '#name' => 'offset',
+          '#type' => 'int',
+          '#description' => t('Set the offset of rows returned'),
+          '#optional' => TRUE 
+        ),
+      ),
+    ),
+    array(
+      '#method' => 'platform.get',
+      '#callback' => 'hosting_services_platform_get',
+      '#access arguments' => array('get platform'),
+      '#description' => t('Get a Platform'),
+      '#file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'nid',
+          '#type' => 'int',
+          '#optional' => FALSE,
+          '#description' => t('Enter the Node ID for the platform you wish to get, Returns a list of available Profiles')
+        ),
+      ),
+    ),
+    // Profile Services
+    array(
+        // List all profiles
+      '#method' => 'profile.list',
+      '#callback' => 'hosting_get_profiles',
+      '#description' => t('List all Available Profiles'),
+      '#access arguments' => array('list profiles'),
+      '#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
+    ),
+    array(
+        // Get profiles
+      '#method' => 'profile.get',
+      '#callback' => 'hosting_services_profile_get',
+      '#description' => t('Get a Profile, Returns also a list of valid Platforms'),
+      '#access arguments' => array('get profile'),
+      '#file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'nid',
+          '#type' => 'int',
+          '#optional' => FALSE,
+          '#description' => t('Enter the Node ID for the profile you wish to get'),
+        ),
+      ),
+    ),
+    // Task Services
+    array(
+      '#method' => 'task.create',
+      '#callback' => 'hosting_services_create_task',
+      '#description' => t('Create an Aegir task'),
+      '#access arguments' => array('create task'),
+      '#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array(
+          '#name' => 'url',
+          '#type' => 'string',
+          '#optional' => FALSE,
+          '#description' => t('Site URL'),
+        ),
+        array(
+          '#name' => 'type',
+          '#type' => 'string',
+          '#optional' => FALSE,
+          '#description' => t('Task Type'),
+        ),
+        array(
+          '#name' => 'options',
+          '#optional' => TRUE,
+          '#type' => 'array',
+          '#description' => t('Additional Task options'),
+        ),
+      ),
+    ),
+    array(
+      '#method' => 'task.get',
+      '#callback' => 'hosting_services_get_task',
+      '#description' => t('Get a Task node'),
+      '#file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      '#access arguments' => array('get task'),
+      '#args' => array(
+        array( '#name' => 'nid', '#type' => 'int', '#description' => t('Node id of the task')),
+      ),
+    ),
+    // Site services
+    array(
+      '#method' => 'site.save',
+      '#callback' => 'hosting_services_save_site',
+      '#description' => t('Site Save'),
+      '#access arguments' => array('save site'),
+      '#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array( '#name' => 'site', '#type' => 'struct', '#description' => t('URL')),
+      ),
+    ),
+    array(
+      '#method' => 'site.get',
+      '#callback' => 'hosting_services_get_site',
+      '#description' => t('Get Site'),
+      '#access arguments' => array('get site'),
+      '#file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      '#args' => array(
+        array( '#name' => 'url', '#type' => 'string', '#description' => t('URL')),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of Hook_nodeapi
+ */
+function hosting_services_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL){
+
+  switch($node->type){
+    case 'platform':
+      // Lets define if we can create new sites on this platform from remote
+      switch($op){
+        case 'insert':
+          if( $node->remote_site_creation_enabled ){
+            db_query('INSERT INTO {hosting_services_platforms} (vid, nid) VALUES (%d, %d)', $node->vid, $node->nid);
+          }
+          break;
+        case 'update':
+            if($node->revision && $node->remote_site_creation_enabled){
+              db_query('INSERT INTO {hosting_services_platforms} (vid, nid) VALUES (%d, %d)', $node->vid, $node->nid);
+            } 
+            else if( db_result( db_query( "SELECT COUNT(*) FROM {hosting_services_platforms} WHERE nid = %d AND vid = %d", $node->nid, $node->vid ) > 0 && $node->services_enabled == 0 ) ) {
+              db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
+            } 
+            else if($node->services_enabled == 0 ){
+              db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
+            }
+          break;
+        case 'delete':
+          db_query('DELETE FROM {hosting_services_platforms} WHERE nid =%d',$node->nid);
+          break;
+        case 'delete_revision':
+          db_query('DELETE FROM {hosting_services_platforms} WHERE vid = %d', $node->vid);
+          break;
+        case 'load':
+          if(db_result(db_query('SELECT COUNT(*) FROM {hosting_services_platforms} 
+          WHERE nid = %d', $node->nid)) > 0){
+            $node->remote_site_creation_enabled = 1;
+          } else {
+            $node->remote_site_creation_enabled = 0;
+          }
+          break;
+        case 'view':
+          break;
+    }
+    break;
+}
+}
+
+/**
+ * Implementation of hook_form_alter
+ */
+function hosting_services_form_alter(&$form, &$form_state){
+  if($form['#token'] == 'platform_node_form'){
+    $form['remote_site_creation_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable this Platform for Remote Site Creation'),
+      '#description' => t('Enables a platform to be used when creating sites via services.'),
+      '#default_value' => $form['#node']->remote_site_creation_enabled,
+    );
+  }   
 }
