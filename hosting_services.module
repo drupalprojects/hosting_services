@@ -113,7 +113,7 @@ function hosting_services_resources() {
 
 /**
  * Implementation of hook_service
- */
+ *//*
 function hosting_services_service(){
   return array(
     // Client Services
@@ -327,7 +327,7 @@ function hosting_services_service(){
     ),
   );
 }
-
+*/
 /**
  * Implementation of Hook_nodeapi
  */
