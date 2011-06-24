@@ -21,6 +21,46 @@ function hosting_services_menu() {
 }
 
 /**
+ * Implementation of hook_resources
+ */
+function hosting_services_resources() {
+  $resources = array();
+
+  // Profile Services
+  $resources['profile'] = array(
+    // List operation
+    'index' => array(
+      'callback' => 'hosting_get_profiles',
+      'help' => t('List all Available Profiles'),
+      'access arguments' => array('list profiles'),
+     // 'file' => array('file' => 'profile.inc', 'module' => 'hosting_services')
+    ),
+    // Get operation
+    'retrieve' => array(
+      'callback' => 'hosting_services_profile_get',
+      'help' => t('Get a profile and a list of valid platforms'),
+      'access arguments' => array('get profile'),
+      'file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('Enter the node ID for the profile you wish to get'),
+          'source' => array('path' => '0')
+        ),
+      ),
+    ),
+  );
+
+  return $resources;
+}
+
+function hosting_services_always_true($arg) {
+  return TRUE;
+}
+
+/**
  * Implementation of hook_service
  */
 function hosting_services_service(){
