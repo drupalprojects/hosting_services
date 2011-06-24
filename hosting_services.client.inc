@@ -38,19 +38,22 @@ function hosting_services_client($email){
 
 /**
  * Perform client.sites
+ *
+ * @param $id
+ *   Nid or unique client name suitable for use with hosting_get_client
  */
-function hosting_services_client_sites($email = ''){
-  if(db_result(db_query("SELECT COUNT(*) FROM {hosting_client} WHERE email = '%s'", $email)) > 0){
-    $client = db_fetch_object(db_query("SELECT * FROM {hosting_client} WHERE email ='%s'", $email));
-    $siteListQry = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
+function hosting_services_client_sites($id = ''){
+  $client = hosting_get_client($id);
+  if($client && !empty($client)){
+    $site_list_qry = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
     $sites = array();
-    while($site = db_fetch_object($siteListQry) ){
+    while($site = db_fetch_object($site_list_qry) ){
       $sites[] = node_load(array('nid' => $site->nid ));       
     }
     return $sites;
   } 
   else {
-    // Client does not Exist in the system
+    // Client does not exist in the system
     return false;
   }    
 }
@@ -58,18 +61,33 @@ function hosting_services_client_sites($email = ''){
 /**
  * Create a new client node
  */
-function hosting_services_client_save($email = '', $name ='' ){
+function hosting_services_client_save($name = ''){
   global $user;
-  $client->title = $email;
-  $client->email_confirm =$email;
-  $client->email = $email;
-  $client->client_name = $email;
+
+  $client = new stdClass();
+
   $client->type = 'client';
- 
-  $new = node_save( $client );
-  print_r($new);
-  return $new;
+  $client->title = $name;
+  $client->uid = ($user->uid) ? $user->uid : NULL;
+  $client->name = ($user->name) ? $user->name : NULL;
+
+  // Make sure the client title is unique
+  if ($suggestion = hosting_client_validate_suggest($client)) {
+    $client->title = $suggestion;
+  }
+
+  // Validate the node
+  node_validate($client);
+
+  // Save the node
+  $client->status = 1;
+  $new_client = node_save($client);
+
+  return $new_client;
 }
+
+
+
 
 /**
  * Suspend client sites

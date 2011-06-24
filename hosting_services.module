@@ -27,13 +27,12 @@ function hosting_services_resources() {
   $resources = array();
 
   // Profile Services
-  $resources['profile'] = array(
+  $resources['hosting_profile'] = array(
     // List operation
     'index' => array(
       'callback' => 'hosting_get_profiles',
-      'help' => t('List all Available Profiles'),
+      'help' => t('List all available profiles'),
       'access arguments' => array('list profiles'),
-     // 'file' => array('file' => 'profile.inc', 'module' => 'hosting_services')
     ),
     // Get operation
     'retrieve' => array(
@@ -53,11 +52,63 @@ function hosting_services_resources() {
     ),
   );
 
-  return $resources;
-}
+  // Client Services
+  $resources['hosting_client'] = array(
+    'index' => array(
+      'callback' => '_hosting_get_clients',
+      'help' => t('List all clients'),
+      'access arguments' => array('view client'),
+    ),
+    'retrieve' => array(
+      'callback' => 'hosting_get_client',
+      'help' => t('Fetch the client node.'),
+      'access arguments' => array('view client'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('Nid or unique name of the client'),
+          'source' => array('path' => '0')
+        ),
+      ),
+    ),
+    'create' => array(
+      'callback' => 'hosting_services_client_save',
+      'help' => t('Create a client'),
+      'access arguments' => array('create client'),
+      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'name',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('Unique name of the client'),
+          'source' => 'data'
+        ),
+      ),
+    ),
+    'actions' => array(
+      // Return a client's sites
+      'sites' => array(
+        'help' => t("Return a list of the client's sites"),
+        'callback' => 'hosting_services_client_sites',
+        'access arguments' => array('view client'),
+        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t("Nid or unique name of the client"),
+            'source' => 'data',
+          ),
+        ),    
+      ),
+    ),
+  );
 
-function hosting_services_always_true($arg) {
-  return TRUE;
+  return $resources;
 }
 
 /**
