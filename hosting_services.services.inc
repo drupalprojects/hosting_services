@@ -1,24 +1,6 @@
 <?php 
 
 /**
- * Disable function to simplify development
- *
- * TODO remove this function and dependencies before 1.0 release
- */
-function hosting_services_disable(){
-  cache_clear_all('services:methods', 'cache');
-}
-
-/**
- * Enable function to simplify development
- *
- * TODO remove this function and dependencies before 1.0 release
- */
-function hosting_services_enable(){
-  cache_clear_all('services:methods', 'cache');
-}
-
-/**
  * Implementation of hook_service
  */
 function hosting_services_service(){
