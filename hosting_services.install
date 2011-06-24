@@ -26,6 +26,7 @@ function hosting_services_schema(){
  */
 function hosting_services_install() {
   drupal_install_schema('hosting_services');
+  cache_clear_all('services:methods', 'cache');
 }
 
 /**
@@ -33,4 +34,5 @@ function hosting_services_install() {
  */
 function hosting_services_uninstall() {
   drupal_uninstall_schema('hosting_services');
+  cache_clear_all('services:methods', 'cache');
 }
