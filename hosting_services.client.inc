@@ -112,8 +112,6 @@ function hosting_services_suspend_client_sites($name){
   return TRUE;
 }
 
-
-
 /**
  * Unsuspend a clients sites
  */
