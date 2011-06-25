@@ -83,8 +83,47 @@ function hosting_services_resources() {
           'name' => 'name',
           'type' => 'string',
           'optional' => FALSE,
-          'description' => t('Unique name of the client'),
+          'description' => t('Name to give the client'),
           'source' => 'data'
+        ),
+      ),
+    ),
+    'update' => array(
+      'callback' => 'hosting_services_client_save',
+      'help' => t('Update a client'),
+      'access callback' => 'hosting_services_client_access',
+      'access arguments append' => TRUE,
+      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'name',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('Name or nid of the client'),
+          'source' => array('path' => 0),
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'description' => t('The node data object'),
+          'source' => 'data',
+          'optional' => FALSE,
+        ),
+      ),
+    ),
+    'delete' => array(
+      'callback' => 'hosting_services_client_delete',
+      'help' => t('Delete a client'),
+      'access callback' => 'hosting_services_client_access',
+      'access arguments append' => TRUE,
+      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'name',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('Name or nid of the client'),
+          'source' => array('path' => 0),
         ),
       ),
     ),
@@ -104,6 +143,38 @@ function hosting_services_resources() {
             'source' => 'data',
           ),
         ),    
+      ),
+      // Disable all of a client's sites
+      'disable_sites' => array(
+        'help' => t('Disable all client sites'),
+        'callback' => 'hosting_services_suspend_client_sites',
+        'access arguments' => array('suspend client sites'),
+        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t("Nid or unique name of the client"),
+            'source' => 'data',
+          ),
+        ),
+      ),
+      // Enable all of a client's sites
+      'enable_sites' => array(
+        'help' => t('Enable all client sites'),
+        'callback' => 'hosting_services_unsuspend_client_sites',
+        'access arguments' => array('unsuspend client sites'),
+        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t("Nid or unique name of the client"),
+            'source' => 'data',
+          ),
+        ),
       ),
     ),
   );
