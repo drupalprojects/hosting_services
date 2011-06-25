@@ -52,6 +52,49 @@ function hosting_services_resources() {
     ),
   );
 
+  // Platform Services
+  $resources['hosting_platform'] = array(
+    // List operation
+    'index' => array(
+      'callback' => 'hosting_services_platform_list',
+      'help' => t('List all available platforms'),
+      'access arguments' => array('list platforms'),
+      'file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'row_count',
+          'type' => 'int',
+          'description' => t('You can limit the number of returned results to cut down on load time'),
+          'optional' => TRUE,
+          'source' => 'data'
+        ),
+        array(
+          'name' => 'offset',
+          'type' => 'int',
+          'description' => t('Set the offset of rows returned'),
+          'optional' => TRUE,
+          'source' => 'data' 
+        ),
+      ),
+    ),
+    // Get operation
+    'retrieve' => array(
+      'callback' => 'hosting_services_platform_get',
+      'help' => t('Get a platform'),
+      'access arguments' => array('get platform'),
+      'file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('Enter the node ID for the platform you wish to get'),
+          'source' => array('path' => '0')
+        ),
+      ),
+    ),
+  );
+
   // Client Services
   $resources['hosting_client'] = array(
     'index' => array(
@@ -414,15 +457,20 @@ function hosting_services_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL){
           }
           break;
         case 'update':
-            if($node->revision && $node->remote_site_creation_enabled){
-              db_query('INSERT INTO {hosting_services_platforms} (vid, nid) VALUES (%d, %d)', $node->vid, $node->nid);
-            } 
-            else if( db_result( db_query( "SELECT COUNT(*) FROM {hosting_services_platforms} WHERE nid = %d AND vid = %d", $node->nid, $node->vid ) > 0 && $node->services_enabled == 0 ) ) {
-              db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
-            } 
-            else if($node->services_enabled == 0 ){
-              db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
-            }
+         $data = array(
+           'nid' => $node->nid,
+           'vid' => $node->vid,
+         );
+         $rec_check = db_result(db_query("SELECT COUNT(*) FROM {hosting_services_platforms} WHERE nid = %d AND vid = %d", $node->nid, $node->vid));
+         if ($node->remote_site_creation_enabled && $rec_check) {
+            drupal_write_record('hosting_services_platforms', $data, 'nid');
+          } 
+          else if ($node->remote_site_creation_enabled) {
+            drupal_write_record('hosting_services_platforms', $data);
+          } 
+          else if($node->services_enabled == 0 ){
+            db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
+          }
           break;
         case 'delete':
           db_query('DELETE FROM {hosting_services_platforms} WHERE nid =%d',$node->nid);

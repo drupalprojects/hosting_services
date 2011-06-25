@@ -7,6 +7,15 @@ read -p "Test hosting_services resources for $url? (Y/n)" -n 1
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo -e "\nBegin test of $url\n"
+  #-------------------------
+  # Test Platform Operations
+  #-------------------------
+  echo -e "\nTesting platform operations\n"
+  echo -e "---------------------------\n"
+
+  echo -e "\nList all platforms\n\n"
+  curl -i -X GET -d "row_count=10&offset=1" "http://$url/hosting_platform"
+
   #-----------------------
   # Test Client Operations
   #-----------------------
