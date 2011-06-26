@@ -95,6 +95,120 @@ function hosting_services_resources() {
     ),
   );
 
+  // Task Services
+  $resources['hosting_task'] = array(
+    'index' => array(
+      'callback' => 'hosting_get_tasks',
+      'help' => t('List all tasks'),
+      'access arguments' => array('get task'),
+    ),
+    'retrieve' => array(
+      'callback' => 'hosting_services_get_task',
+      'help' => t('Fetch an Aegir task'),
+      'access arguments' => array('get task'),
+      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('The task node id'),
+          'source' => array('path' => '0')
+        ),
+      ),
+    ),
+    'create' => array(
+      'callback' => 'hosting_services_save_task',
+      'help' => t('Create an aegir task'),
+      'access arguments' => array('create task'),
+      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => TRUE,
+          'description' => t('The task node id'),
+          'source' => 'data',
+          'default value' => NULL,
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'optional' => TRUE,
+          'description' => t('Data to be used in constructing the task'),
+          'default value' => array(),
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'options',
+          'type' => 'struct',
+          'optional' => TRUE,
+          'description' => t('Options specific to certain task types'),
+          'default value' => array(),
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'rid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('The node id of the node to apply the task to'),
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'type',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('The task type'),
+          'source' => 'data',
+        ),
+      ),
+    ),
+    'update' => array(
+      'callback' => 'hosting_services_save_task',
+      'help' => t('Update an aegir task'),
+      'access arguments' => array('create task'),
+      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('The task node id'),
+          'source' => array('path' => 0),
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'optional' => FALSE,
+          'description' => t('Data to be used in constructing the task'),
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'options',
+          'type' => 'struct',
+          'optional' => TRUE,
+          'description' => t('Options specific to certain task types'),
+          'default value' => array(),
+          'source' => 'data',
+        ),
+      ),
+    ),
+    'delete' => array(
+      'callback' => 'node_delete',
+      'help' => t('Delete an aegir task'),
+      'access arguments' => array('create task'),
+      'args' => array(
+        array(
+          'name' => 'nid',
+          'type' => 'int',
+          'optional' => FALSE,
+          'description' => t('The task node id'),
+          'source' => array('path' => 0),
+        ),
+      ),
+    ),
+  );
+
   // Client Services
   $resources['hosting_client'] = array(
     'index' => array(
