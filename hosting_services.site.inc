@@ -1,49 +1,41 @@
 <?php 
-
 /**
- * Perform site.save
+ * List all sites
  */
-function hosting_services_save_site($xtras, $url, $server, $platform, $profile, $client, $site_options, $uid){
-  watchdog('Aegir Remoting', 'xtras:'.$newsite
-    .' URL:'.$url
-    .' Server:'.$server
-    .' Platform:'.$platform
-    .' Profile:'.$profile
-    .' Client:'.$client
-    .' Options:'.$site_options
-    .' Client:'.$client
-  );
-  $site->type = 'site';
-  $site->title = $url;
-  $site->db_server = variable_get( 'hostmaster_prefered_dbserver', $server );
-  $site->platform = $platform;
-  $site->profile = $profile;
-  $site->hostmaster_site_options = $site_options;
-  $site->uid = $uid;
-  $clientCheck = db_fetch_object(db_query('SELECT * FROM {hosting_client} WHERE email = "%s"', $client));
-  if(!isset($clientCheck->nid)){
-    watchdog('Aegir Remoting', 'Could not find a client with an email of '.$client);
-    $clientNode->email = $client;
-    $clientNode->email_confirm = $client;
-    $clientNode->uid = $uid;
-    $clientNode->client_name = $client;
-    $clientNode->type = 'client';
-    $clientSaved = node_save($clientNode);
-    $clientCheck = db_fetch_object(db_query('SELECT * FROM {hosting_client} WHERE mail = "%s"', $client));
-    $site->client = $client;
-  } 
-  else {
-    // We found the client so we are good to go
-    $site->client = $client;
+function hosting_services_list_sites() {
+  $sites = array();
+  $site_result = db_query('SELECT nid, title FROM {node} WHERE type = "site"');
+  while ($row = db_fetch_array($site_result)) {
+    $sites[] = $row;
   }
-  node_save($site); 
-  return $site;
+  return $sites;
 }
 
 /**
- * Return aegir's site node
+ * Create and update sites
  */
-function hosting_services_get_site($sessid, $url ){
-  $site = node_load(array('title' => $url));
-  return $site;
+function hosting_services_save_site($url, $data) {
+  global $user;
+  // Try to retrieve an existing site
+  $site = hosting_get_site_by_url(check_plain($url));
+  if ($site) {
+    $site = (object) array_merge((array) $site, $data);
+  }
+  else {
+    if (!is_numeric($data['platform']) || !is_numeric($data['profile']) || !is_numeric($data['client'])) {
+      return FALSE;
+    }
+    $site->type = 'site';
+    $site->title = $site->hosting_name = check_plain($url);
+    $site->db_server = variable_get('hosting_default_dbserver', $data['db_server']);
+    $site->platform = $data['platform'];
+    $site->profile = $data['profile'];
+    $site->client = $data['client'];
+    $site->uid = $user->uid;
+  }
+
+  node_validate($site);
+
+  $site->status = 1;
+  return node_save($site); 
 }

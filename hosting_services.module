@@ -209,6 +209,75 @@ function hosting_services_resources() {
     ),
   );
 
+  // Site Services
+  $resources['hosting_site'] = array(
+    'index' => array(
+      'callback' => 'hosting_services_list_sites',
+      'help' => t('List all sites'),
+      'access arguments' => array('get site'),
+      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+    ),
+    'retrieve' => array(
+      'callback' => 'hosting_get_site_by_url',
+      'help' => t('Fetch the site node'),
+      'access arguments' => array('get site'),
+      'args' => array(
+        array(
+          'name' => 'url',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('The site url'),
+          'source' => array('path' => '0')
+        ),
+      ),
+    ),
+    'create' => array(
+      'callback' => 'hosting_services_save_site',
+      'help' => t('Create a site'),
+      'access arguments' => array('save site'),
+      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'url',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('URL of the site to create'),
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'description' => t('Must specify client, platform and profile nids'),
+          'source' => 'data',
+          'optional' => FALSE,
+        ),
+      ),
+    ),
+    'update' => array(
+      'callback' => 'hosting_services_save_site',
+      'help' => t('Update a site'),
+      'access arguments' => array('save site'),
+      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'url',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('URL of the site to change'),
+          'source' => array('path' => 0),
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'description' => t('Site values to change'),
+          'source' => 'data',
+          'optional' => FALSE,
+        ),
+      ),
+    ),
+
+  );
+
   // Client Services
   $resources['hosting_client'] = array(
     'index' => array(
