@@ -26,6 +26,16 @@ function hosting_services_menu() {
 function hosting_services_resources() {
   $resources = array();
 
+  // Signup actions
+  $resources['hosting_signup'] = array(
+    'index' => array(
+      'help' => t("Returns the signup form"),
+      'callback' => 'hosting_services_signup_form',
+      'access arguments' => array('access content'),
+      'file' => array('file' => 'signup.inc', 'module' => 'hosting_services'),
+    ),
+  );
+
   // Profile Services
   $resources['hosting_profile'] = array(
     // List operation
