@@ -16,6 +16,8 @@ then
   echo -e "\nList all platforms\n\n"
   curl -i -X GET -d "row_count=10&offset=1" "http://$url/hosting_platform"
 
+# Site test example: curl -i -X POST -d "url=test3.sfyn.office.koumbit.net&data[platform]=619&data[profile]=51&data[client]=851" "http://$url/hosting_site"
+
   #-----------------------
   # Test Client Operations
   #-----------------------

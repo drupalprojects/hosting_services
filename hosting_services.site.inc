@@ -22,20 +22,31 @@ function hosting_services_save_site($url, $data) {
     $site = (object) array_merge((array) $site, $data);
   }
   else {
-    if (!is_numeric($data['platform']) || !is_numeric($data['profile']) || !is_numeric($data['client'])) {
+    if (!is_numeric($data['platform']) || !is_numeric($data['profile'])) {
       return FALSE;
     }
     $site->type = 'site';
     $site->title = $site->hosting_name = check_plain($url);
-    $site->db_server = variable_get('hosting_default_dbserver', $data['db_server']);
-    $site->platform = $data['platform'];
-    $site->profile = $data['profile'];
-    $site->client = $data['client'];
+    $site->db_server = (is_numeric($data['db_server'])) ? $data['db_server'] : variable_get('hosting_default_db_server', 0);
+    $site->client = (is_numeric($data['client'])) ? $data['client'] : variable_get('hosting_default_client', 1);
+    $site = (object) array_merge((array) $site, $data);
     $site->uid = $user->uid;
+    // Provide ip addresses if none have been provided
+    if (empty($site->ip_addresses)) {
+      $site->ip_addresses = _hosting_services_default_ip();
+    }
   }
 
   node_validate($site);
 
   $site->status = 1;
   return node_save($site); 
+}
+
+/**
+ * Helper function to retrieve a default server ips
+ */
+function _hosting_services_default_ip() {
+  $http = node_load(variable_get('hosting_default_web_server', 0));
+  return $http->ip_addresses;
 }
