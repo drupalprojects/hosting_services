@@ -66,14 +66,14 @@ function hosting_services_resources() {
           'type' => 'int',
           'description' => t('You can limit the number of returned results to cut down on load time'),
           'optional' => TRUE,
-          'source' => 'data'
+          'source' => 'param'
         ),
         array(
           'name' => 'offset',
           'type' => 'int',
           'description' => t('Set the offset of rows returned'),
           'optional' => TRUE,
-          'source' => 'data' 
+          'source' => 'param' 
         ),
       ),
     ),

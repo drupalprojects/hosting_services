@@ -13,8 +13,8 @@ then
   echo -e "\nTesting platform operations\n"
   echo -e "---------------------------\n"
 
-  echo -e "\nList all platforms\n\n"
-  curl -i -X GET -d "row_count=10&offset=1" "http://$url/hosting_platform"
+  echo -e "\nList second, third and fourth platforms\n\n"
+  curl -i -X GET -d "http://$url/hosting_platform?row_count=3&offset=1"
 
 # Site test example: curl -i -X POST -d "url=test3.sfyn.office.koumbit.net&data[platform]=619&data[profile]=51&data[client]=851" "http://$url/hosting_site"
 

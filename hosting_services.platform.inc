@@ -7,13 +7,17 @@
  */
 function hosting_services_platform_list($rows = 0, $offset = 0){
 
-  $platform_query = db_query('SELECT nid FROM {node} WHERE type = "platform" ');
-  while($plat = db_fetch_object($platform_query)){
-    $platform = node_load($plat->nid);
-    die (var_export($platform, true));
-    if(!_hosting_platform_is_locked($platform) && $platform->remote_site_creation_enabled == 1){
-      $platforms[] = $platform;
-    }
+  $conditions = '';
+
+  if (is_numeric($rows)) {
+    $conditions .= ' LIMIT ' . check_plain($rows);
+  }
+  if ($conditions && is_numeric($offset)) {
+    $conditions .= ' OFFSET ' . check_plain($offset);
+  }
+  $platform_query = db_query('SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_services_platforms} hsp ON hsp.nid = n.nid INNER JOIN {hosting_platform} hp ON hp.nid = n.nid WHERE n.type = "platform" AND hp.status = %d' . $conditions, HOSTING_PLATFORM_ENABLED);
+  while($plat = db_fetch_array($platform_query)){
+    $platforms[] = $plat;
   }
   return $platforms;
 }
