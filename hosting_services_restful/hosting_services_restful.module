@@ -1,0 +1,3 @@
+<?php
+
+include_once('hosting_services_restful.features.inc');
