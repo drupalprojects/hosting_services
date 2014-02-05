@@ -1,0 +1,255 @@
+<?php
+/**
+ * Implements hook_permission().
+ */
+function hosting_services_client_permissions(){
+  return array(
+    'view remote sites' => array(
+      'title' => t('View remote sites'),
+      'description' => t('View remote site information'),
+    ),
+    'view remote platforms' => array(
+      'title' => t('View remote platforms'),
+      'description' => t('View remote platform information'),
+    ),
+    'remote site ops' => array(
+      'title' => t('Change remote sites'),
+      'description' => t('Perform operations on remote sites'),
+    ),
+    'remote platforms ops' => array(
+      'title' => t('Change remote platforms'),
+      'description' => t('Perform operations on remote platforms'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function hosting_services_client_menu(){
+  $items['admin/config/services/aegir'] = array(
+    'title' => t('Aegir Remote Settings'),
+    'page callback' => 'drupal_get_form',
+    'description' => t('Settings for remote aegir integration'),
+    'page arguments' => array('hosting_services_client_settings_form'),
+    'access arguments' => array('administer site configuration'),
+  );
+  $items['aegir/sites'] = array(
+    'title' => t('Remote Site List'),
+    'page callback' => 'hosting_services_site_list',
+    'access arguments' => array('view remote sites'),
+  );
+  $items['aegir/sites/%/%'] = array(
+    'page callback' => 'hosting_services_site_operation',
+    'page arguments' => array(2,3),
+    'access arguments' => array('remote site ops'),
+  );
+  $items['aegir/platforms'] = array(
+    'title' => t('Remote Platform List'),
+    'page callback' => 'hosting_services_platform_list',
+    'access arguments' => array('view remote platforms'),
+  );
+  $items['aegir/platforms/%/%'] = array(
+    'page callback' => 'hosting_services_platform_operation',
+    'page arguments' => array(2,3),
+    'access arguments' => array('remote platforms ops'),
+  );
+  return $items;
+}
+
+function hosting_services_client_settings_form($form, &$form_state){
+  $form['aegir_remote_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Remote Aegir Url'),
+    '#default_value' => variable_get('aegir_remote_url', ''),
+    '#description' => t('The absolute base url to the remote Aegir system. Dont include trailing slash.'),
+  );
+  return system_settings_form($form);
+}
+
+function hosting_services_site_list(){
+  // Your Application URL
+  $base_url = variable_get('aegir_remote_url', '');
+  // Include the site resource endpoint.
+  $api_url = $base_url . '/aegir/hosting_site';
+
+  // Set the appropriate headers
+  $options = array(
+    'headers' => array(
+      'Accept' => 'application/json',
+    ),
+    'method' => 'GET',
+  );
+
+  // Make the actual request.
+  $response = drupal_http_request("$api_url.json", $options);
+
+  // Decode the json response
+  $sites = array();
+  if($response->code == 200){
+    $sites = json_decode($response->data);
+  }
+
+  // Loop through each site and generate operation links, and table row.
+  $rows = array();
+  foreach($sites as $site){
+    $verify = l('verify', 'aegir/sites/' . $site->nid . '/verify');
+    $enable = l('enable', 'aegir/sites/' . $site->nid . '/enable');
+    $disable = l('disable', 'aegir/sites/' . $site->nid . '/disable');
+    $links = array($verify, $enable, $disable);
+    $ops = implode(' | ', $links);
+    $row = array($site->nid, $site->title, $ops);
+    $rows[] = $row;
+  }
+
+  // Assemble the table.
+  $header = array(t('Site NID'), t('Site Title'), t('Operations'));
+  $table = array(
+    'header' => $header,
+    'rows' => $rows,
+  );
+
+  return theme('table', $table);
+}
+
+function hosting_services_platform_list(){
+  // Your Application URL
+  $base_url = variable_get('aegir_remote_url', '');
+  // Include the platform resource endpoint.
+  $api_url = $base_url . '/aegir/hosting_platform';
+
+  // Set the appropriate headers.
+  $options = array(
+    'headers' => array(
+      'Accept' => 'application/json',
+    ),
+    'method' => 'GET',
+  );
+
+  // Make the actual response.
+  $response = drupal_http_request("$api_url.json", $options);
+
+  // Decode the json response.
+  $platforms = array();
+  if($response->code == 200){
+    $platforms = json_decode($response->data);
+  }
+
+  // Loop through each platform and generate operation links, and table row.
+  $rows = array();
+  foreach($platforms as $platform){
+    $verify = l('verify', 'aegir/platforms/' . $platform->nid . '/verify');
+    $lock = l('lock', 'aegir/platforms/' . $platform->nid . '/lock');
+    $unlock = l('unlock', 'aegir/platforms/' . $platform->nid . '/unlock');
+    $links = array($verify, $lock, $unlock);
+    $ops = implode(' | ', $links);
+    $row = array($platform->nid, $platform->title, $ops);
+    $rows[] = $row;
+  }
+
+  // Assemble the table.
+  $header = array(t('Platform NID'), t('Platform Title'), t('Operations'));
+  $table = array(
+    'header' => $header,
+    'rows' => $rows,
+  );
+
+  return theme('table', $table);
+}
+
+function hosting_services_site_operation($nid, $op){
+  // Allowable platform tasks.
+  $ops = array('verify', 'enable', 'disable');
+
+  // If an operation is not allowed, go back to the list.
+  if(!in_array($op, $ops)){
+    drupal_set_message(t('An unauthorized task was attempted on the site.'));
+    drupal_goto('aegir/sites');
+  }
+
+  //Your Application URL
+  $base_url = variable_get('aegir_remote_url', '');
+  // Include the site resource endpoint and operation in the url.
+  $api_url = $base_url . '/aegir/hosting_site/' . $op;
+
+  // For Actions, we need to include the operation as a url parameter.
+  $params = array('type' => $op);
+  $params = drupal_http_build_query($params);
+  // Append the parameters to the url.
+  $api_url = $api_url . '?' . $params;
+
+  // Gather the POST data in an array.
+  $data = array('nid' => $nid);
+  $data = http_build_query($data, '', '&');
+
+  // Set the options array with header/data.
+  $options = array(
+    'headers' => array(
+      'Accept' => 'application/json',
+    ),
+    'method' => 'POST',
+    'data' => $data,
+  );
+
+  // Make the actual request.
+  $response = drupal_http_request($api_url, $options);
+
+  // Set an appropriate message.
+  if($response->code == 200){
+    drupal_set_message(t("The @op operation was successful.", array('@op' => $op)));
+    drupal_goto('aegir/sites');
+  }
+  else{
+    drupal_set_message(t('There was an issue.'));
+    drupal_goto('aegir/sites');
+  }
+}
+
+function hosting_services_platform_operation($nid, $op){
+  // Allowable platform tasks.
+  $ops = array('verify', 'lock', 'unlock');
+
+  // If an operation is not allowed, go back to the list.
+  if(!in_array($op, $ops)){
+    drupal_set_message(t('An unauthorized task was attempted on the platform.'));
+    drupal_goto('aegir/platforms');
+  }
+
+  //Your Application URL
+  $base_url = variable_get('aegir_remote_url', '');
+  // Include the resource endpoint and operation in the url.
+  $api_url = $base_url . '/aegir/hosting_platform/' . $op;
+
+  // For Actions, we need to include the operation as a url parameter.
+  $params = array('type' => $op);
+  $params = drupal_http_build_query($params);
+  // Append the parameters to the url.
+  $api_url = $api_url . '?' . $params;
+
+  // Gather the POST data in an array.
+  $data = array('nid' => $nid);
+  $data = http_build_query($data, '', '&');
+
+  // Set the options array with header/data.
+  $options = array(
+    'headers' => array(
+      'Accept' => 'application/json',
+    ),
+    'method' => 'POST',
+    'data' => $data,
+  );
+
+  // Make the actual request.
+  $response = drupal_http_request($api_url, $options);
+
+  // Set an appropriate message.
+  if($response->code == 200){
+    drupal_set_message(t("The @op operation was successful.", array('@op' => $op)));
+    drupal_goto('aegir/platforms');
+  }
+  else{
+    drupal_set_message(t('There was an issue.'));
+    drupal_goto('aegir/platforms');
+  }
+}
+
