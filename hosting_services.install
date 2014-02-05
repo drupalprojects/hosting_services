@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * Aegir Services Schema
@@ -17,7 +17,7 @@ function hosting_services_schema(){
       ),
     )
   );
-  
+
   return $schema;
 }
 
@@ -25,7 +25,6 @@ function hosting_services_schema(){
  * Install Hook
  */
 function hosting_services_install() {
-  drupal_install_schema('hosting_services');
   cache_clear_all('services:methods', 'cache');
 }
 
@@ -33,6 +32,5 @@ function hosting_services_install() {
  * Uninstall Hook
  */
 function hosting_services_uninstall() {
-  drupal_uninstall_schema('hosting_services');
   cache_clear_all('services:methods', 'cache');
 }

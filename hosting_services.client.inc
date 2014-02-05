@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * Perform client.sites
@@ -9,34 +9,34 @@
 function hosting_services_client_sites($id = ''){
   $client = hosting_get_client($id);
   if($client && !empty($client)){
-    $site_list_qry = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
+    $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = :nid", array(':nid' => $client->nid))->fetchAll();
     $sites = array();
-    while($site = db_fetch_object($site_list_qry) ){
-      $sites[] = node_load(array('nid' => $site->nid ));       
+    foreach($siteList as $site){
+      $sites[] = node_load($site->nid);
     }
     return $sites;
-  } 
+  }
   else {
     // Client does not exist in the system
     return false;
-  }    
+  }
 }
 
 /**
- * Check to make sure the user has the right to do things to this client 
+ * Check to make sure the user has the right to do things to this client
  *
  * @param $name
  *   The client name or nid
- */ 
-function hosting_services_client_access($name) { 
+ */
+function hosting_services_client_access($name) {
   global $user;
   $client = hosting_get_client($name);
-  if ($client && (user_access('administer clients') || array_key_exists($client->nid, hosting_get_client_from_user($user->uid)))) { 
-    return TRUE; 
-  } 
-  else { 
-    return FALSE; 
-  } 
+  if ($client && (user_access('administer clients') || array_key_exists($client->nid, hosting_get_client_from_user($user->uid)))) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -53,12 +53,14 @@ function hosting_services_client_save($name, $data = NULL){
 
     $client->type = 'client';
     $client->title = $name;
+    $client->uname = hosting_client_sanitize($name);
     $client->uid = ($user->uid) ? $user->uid : NULL;
     $client->name = ($user->name) ? $user->name : NULL;
 
     // Make sure the client title is unique
-    if ($suggestion = hosting_client_validate_suggest($client)) {
-      $client->title = $suggestion;
+    $check = db_query("SELECT nid FROM {hosting_client} WHERE uname LIKE ':name'", array(':name' => addcslashes($client->uname, '\%_')))->fetchField();
+    if ($check) {
+      $client->title = hosting_client_validate_suggest($client);
     }
   }
   else {
@@ -71,9 +73,9 @@ function hosting_services_client_save($name, $data = NULL){
 
   // Save the node
   $client->status = 1;
-  $new_client = node_save($client);
+  node_save($client);
 
-  return $new_client;
+  return !empty($client->nid) ? $client : FALSE;
 }
 
 /**
@@ -83,33 +85,31 @@ function hosting_services_client_save($name, $data = NULL){
  *   Client name or nid
  */
 function hosting_services_client_delete($name) {
-  if (!is_numeric($name)) {
-    $client = hosting_get_client($name);
+  $client = hosting_get_client($name)
+    ? hosting_get_client($name)
+    : hosting_get_client_by_uname($name);
+
+  if ($client) {
     node_delete($client->nid);
+    return TRUE;
   }
-  else {
-    node_delete($name);
-  }
+  return FALSE;
 }
 
 /**
  * Suspend client sites
  */
-
 function hosting_services_suspend_client_sites($name){
   $client = hosting_get_client($name);
   if (!$client) {
     return FALSE;
   }
-  $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
-  $task->type = 'task';
-  $task->task_type = 'disable';
-  
-  while($site = db_fetch_object($siteList)){
-    $task->rid = $site->nid;  
-    node_save($task);
+  $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = :nid", array(':nid' => $client->nid))->fetchAll();
+  $tasks = array();
+  foreach($siteList as $site){
+    $tasks[] = hosting_add_task($site->nid, 'disable');
   }
-  return TRUE;
+  return $tasks;
 }
 
 /**
@@ -120,12 +120,10 @@ function hosting_services_unsuspend_client_sites($name){
   if (!$client) {
     return FALSE;
   }
-  $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = %d", $client->nid);
-  $task->type = 'task';
-  $task->task_type = 'enable';
-  
-  while($site = db_fetch_object($siteList)){
-    $task->rid = $site->nid;  
-    node_save($task);
+  $siteList = db_query("SELECT * FROM {hosting_site} WHERE client = :nid", array(':nid' => $client->nid))->fetchAll();
+  $tasks = array();
+  foreach($siteList as $site){
+    $tasks[] = hosting_add_task($site->nid, 'enable');
   }
+  return $tasks;
 }

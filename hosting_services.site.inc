@@ -1,12 +1,13 @@
-<?php 
+<?php
 /**
  * List all sites
  */
 function hosting_services_list_sites() {
   $sites = array();
-  $site_result = db_query('SELECT nid, title FROM {node} WHERE type = "site"');
-  while ($row = db_fetch_array($site_result)) {
-    $sites[] = $row;
+  $site_result = db_query('SELECT nid, title FROM {node} WHERE type = :site', array(':site' => 'site'))->fetchAll();
+
+  foreach($site_result as $site) {
+    $sites[] = $site;
   }
   return $sites;
 }
@@ -40,7 +41,23 @@ function hosting_services_save_site($url, $data) {
   node_validate($site);
 
   $site->status = 1;
-  return node_save($site); 
+  node_save($site);
+  return !empty($site->nid) ? $site : FALSE;
+}
+
+/**
+ * Create tasks
+ */
+function hosting_services_site_task($type,  $nid) {
+  global $user;
+  $tasks = hosting_available_tasks('site');
+  if(array_key_exists($type, $tasks)){
+    $task = hosting_add_task($nid, $type);
+    return $task;
+  }
+  else{
+    return FALSE;
+  }
 }
 
 /**

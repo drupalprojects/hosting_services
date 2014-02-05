@@ -8,6 +8,6 @@
  * Return the signup form
  */
 function hosting_services_signup_form() {
-  $form = hosting_signup_form();
+  $form = drupal_get_form('hosting_signup_form');
   return $form;
 }

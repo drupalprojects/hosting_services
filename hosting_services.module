@@ -1,14 +1,58 @@
-<?php 
+<?php
 
 /**
  * Implementation of hook_perm
  */
-function hosting_services_perm(){
-  return array( 
-    'unsuspend client sites', 'suspend client sites', 'get task', 'create task', 
-    'get profile', 'list profiles', 'get platform', 'list platforms',
-    'save site', 'get site'
+function hosting_services_permission(){
+  $tasks = hosting_available_tasks();
+  foreach($tasks as $node_type => $info){
+    foreach($info as $task => $task_info){
+      $perms[$task . ' ' . $node_type] = array(
+        'title' => $task . ' ' . $node_type,
+        'description' => '',
+      );
+    }
+  }
+
+  $perms['unsuspend client sites'] = array(
+    'title' => t('Unsuspend Client Sites'),
+    'description' => t(''),
   );
+  $perms['suspend client sites'] = array(
+    'title' => t('Suspend Client Sites'),
+    'description' => t(''),
+  );
+  $perms['list profiles'] = array(
+    'title' => t('List Profiles'),
+    'description' => t(''),
+  );
+  $perms['get profile'] = array(
+    'title' => t('Get Profiles'),
+    'description' => t(''),
+  );
+  $perms['list platforms'] = array(
+    'title' => t('List Platforms'),
+    'description' => t(''),
+  );
+  $perms['get platform'] = array(
+    'title' => t('Get Platform'),
+    'description' => t(''),
+  );
+  $perms['get site'] = array(
+    'title' => t('Get Site'),
+    'description' => t(''),
+  );
+  $perms['save site'] = array(
+    'title' => t('Save Site'),
+    'description' => t(''),
+  );
+  $perms['get task'] = array(
+    'title' => t('Get Task'),
+    'description' => t(''),
+  );
+
+  return $perms;
+
 }
 
 /**
@@ -23,7 +67,7 @@ function hosting_services_menu() {
 /**
  * Implementation of hook_resources
  */
-function hosting_services_resources() {
+function hosting_services_services_resources() {
   $resources = array();
 
   // Signup actions
@@ -32,7 +76,7 @@ function hosting_services_resources() {
       'help' => t("Returns the signup form"),
       'callback' => 'hosting_services_signup_form',
       'access arguments' => array('access content'),
-      'file' => array('file' => 'signup.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.signup', 'module' => 'hosting_services'),
     ),
   );
 
@@ -49,7 +93,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_profile_get',
       'help' => t('Get a profile and a list of valid platforms'),
       'access arguments' => array('get profile'),
-      'file' => array('file' => 'profile.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.profile', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'nid',
@@ -69,7 +113,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_platform_list',
       'help' => t('List all available platforms'),
       'access arguments' => array('list platforms'),
-      'file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'row_count',
@@ -83,7 +127,7 @@ function hosting_services_resources() {
           'type' => 'int',
           'description' => t('Set the offset of rows returned'),
           'optional' => TRUE,
-          'source' => 'param' 
+          'source' => 'param'
         ),
       ),
     ),
@@ -92,7 +136,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_platform_get',
       'help' => t('Get a platform'),
       'access arguments' => array('get platform'),
-      'file' => array('file' => 'platform.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'nid',
@@ -100,6 +144,96 @@ function hosting_services_resources() {
           'optional' => FALSE,
           'description' => t('Enter the node ID for the platform you wish to get'),
           'source' => array('path' => '0')
+        ),
+      ),
+    ),
+    'actions' => array(
+      'verify' => array(
+        'callback' => 'hosting_services_platform_task',
+        'help' => t('Verify Platform'),
+        'access arguments' => array("verify platform"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The platform node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'lock' => array(
+        'callback' => 'hosting_services_platform_task',
+        'help' => t('Lock Platform'),
+        'access arguments' => array("lock platform"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The platform node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'unlock' => array(
+        'callback' => 'hosting_services_platform_task',
+        'help' => t('Unlock Platform'),
+        'access arguments' => array("unlock platform"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The platform node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'delete' => array(
+        'callback' => 'hosting_services_platform_task',
+        'help' => t('Delete Plaform'),
+        'access arguments' => array("delete platform"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The platform node id'),
+            'source' => array('data' => 'nid'),
+          ),
         ),
       ),
     ),
@@ -116,7 +250,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_get_task',
       'help' => t('Fetch an Aegir task'),
       'access arguments' => array('get task'),
-      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'nid',
@@ -131,7 +265,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_save_task',
       'help' => t('Create an aegir task'),
       'access arguments' => array('create task'),
-      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'nid',
@@ -177,7 +311,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_save_task',
       'help' => t('Update an aegir task'),
       'access arguments' => array('create task'),
-      'file' => array('file' => 'task.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'nid',
@@ -225,7 +359,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_list_sites',
       'help' => t('List all sites'),
       'access arguments' => array('get site'),
-      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
     ),
     'retrieve' => array(
       'callback' => 'hosting_get_site_by_url',
@@ -245,7 +379,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_save_site',
       'help' => t('Create a site'),
       'access arguments' => array('save site'),
-      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'url',
@@ -267,7 +401,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_save_site',
       'help' => t('Update a site'),
       'access arguments' => array('save site'),
-      'file' => array('file' => 'site.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'url',
@@ -285,7 +419,140 @@ function hosting_services_resources() {
         ),
       ),
     ),
-
+    'actions' => array(
+      'verify' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Verify Site'),
+        'access arguments' => array("verify site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'enable' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Enable Site'),
+        'access arguments' => array("enable site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'disable' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Disable Site'),
+        'access arguments' => array("disable site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'backup' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Backup Site'),
+        'access arguments' => array("backup site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'backup-delete' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Delete Site Backups'),
+        'access arguments' => array("backup-delete site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'delete' => array(
+        'callback' => 'hosting_services_site_task',
+        'help' => t('Delete Site'),
+        'access arguments' => array("delete site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The type of task'),
+            'source' => array('param' => 'type'),
+          ),
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+    ),
   );
 
   // Client Services
@@ -313,7 +580,7 @@ function hosting_services_resources() {
       'callback' => 'hosting_services_client_save',
       'help' => t('Create a client'),
       'access arguments' => array('create client'),
-      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'name',
@@ -329,7 +596,7 @@ function hosting_services_resources() {
       'help' => t('Update a client'),
       'access callback' => 'hosting_services_client_access',
       'access arguments append' => TRUE,
-      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'name',
@@ -352,7 +619,7 @@ function hosting_services_resources() {
       'help' => t('Delete a client'),
       'access callback' => 'hosting_services_client_access',
       'access arguments append' => TRUE,
-      'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
       'args' => array(
         array(
           'name' => 'name',
@@ -369,7 +636,7 @@ function hosting_services_resources() {
         'help' => t("Return a list of the client's sites"),
         'callback' => 'hosting_services_client_sites',
         'access arguments' => array('view client'),
-        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
         'args' => array(
           array(
             'name' => 'nid',
@@ -378,14 +645,14 @@ function hosting_services_resources() {
             'description' => t("Nid or unique name of the client"),
             'source' => array('data' => 'name'),
           ),
-        ),    
+        ),
       ),
       // Disable all of a client's sites
       'disable_sites' => array(
         'help' => t('Disable all client sites'),
         'callback' => 'hosting_services_suspend_client_sites',
         'access arguments' => array('suspend client sites'),
-        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
         'args' => array(
           array(
             'name' => 'nid',
@@ -401,7 +668,7 @@ function hosting_services_resources() {
         'help' => t('Enable all client sites'),
         'callback' => 'hosting_services_unsuspend_client_sites',
         'access arguments' => array('unsuspend client sites'),
-        'file' => array('file' => 'client.inc', 'module' => 'hosting_services'),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.client', 'module' => 'hosting_services'),
         'args' => array(
           array(
             'name' => 'nid',
@@ -419,66 +686,81 @@ function hosting_services_resources() {
 }
 
 /**
- * Implementation of Hook_nodeapi
+ * Implements hook_node_insert().
  */
-function hosting_services_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL){
-
-  switch($node->type){
-    case 'platform':
-      // Lets define if we can create new sites on this platform from remote
-      switch($op){
-        case 'insert':
-          if( $node->remote_site_creation_enabled ){
-            db_query('INSERT INTO {hosting_services_platforms} (vid, nid) VALUES (%d, %d)', $node->vid, $node->nid);
-          }
-          break;
-        case 'update':
-         $data = array(
-           'nid' => $node->nid,
-           'vid' => $node->vid,
-         );
-         $rec_check = db_result(db_query("SELECT COUNT(*) FROM {hosting_services_platforms} WHERE nid = %d AND vid = %d", $node->nid, $node->vid));
-         if ($node->remote_site_creation_enabled && $rec_check) {
-            drupal_write_record('hosting_services_platforms', $data, 'nid');
-          } 
-          else if ($node->remote_site_creation_enabled) {
-            drupal_write_record('hosting_services_platforms', $data);
-          } 
-          else if($node->services_enabled == 0 ){
-            db_query("DELETE FROM {hosting_services_platforms} WHERE nid = %d", $node->nid);
-          }
-          break;
-        case 'delete':
-          db_query('DELETE FROM {hosting_services_platforms} WHERE nid =%d',$node->nid);
-          break;
-        case 'delete_revision':
-          db_query('DELETE FROM {hosting_services_platforms} WHERE vid = %d', $node->vid);
-          break;
-        case 'load':
-          if(db_result(db_query('SELECT COUNT(*) FROM {hosting_services_platforms} 
-          WHERE nid = %d', $node->nid)) > 0){
-            $node->remote_site_creation_enabled = 1;
-          } else {
-            $node->remote_site_creation_enabled = 0;
-          }
-          break;
-        case 'view':
-          break;
+function hosting_services_node_insert($node){
+  if($node->type == 'platform'){
+    if( $node->remote_site_creation_enabled ){
+      db_insert('hosting_services_platforms')
+        ->fields(array(
+          'vid' => $node->vid,
+          'nid' => $node->nid,
+        ))
+        ->execute();
     }
-    break;
+  }
 }
+
+/**
+ * Implements hook_node_update().
+ */
+function hosting_services_node_update($node){
+
+  $data = array(
+    'nid' => $node->nid,
+    'vid' => $node->vid,
+  );
+  $rec_check = db_query("SELECT COUNT(*) FROM {hosting_services_platforms}
+                         WHERE nid = :nid AND vid = :vid",
+                         array(':nid' => $node->nid, ':vid' => $node->vid))->fetchObject();
+  if ($node->remote_site_creation_enabled && $rec_check) {
+    drupal_write_record('hosting_services_platforms', $data, 'nid');
+  }
+  else if ($node->remote_site_creation_enabled) {
+    drupal_write_record('hosting_services_platforms', $data);
+  }
+  else if(isset($node->services_enabled)){
+    db_delete('hosting_services_platforms')
+      ->condition('nid', $node->nid)
+      ->execute();
+  }
 }
+
+/**
+ * Implements hook_node_delete().
+ */
+function hosting_services_node_delete($node){
+  db_delete('hosting_services_platforms')
+    ->condition('nid', $node->nid)
+    ->execute();
+}
+
+/**
+ * Implements hook_node_load().
+ */
+function hosting_services_node_load($nodes){
+  $node = array_shift($nodes);
+  if(db_query('SELECT COUNT(*) FROM {hosting_services_platforms}
+               WHERE nid = :nid', array(':nid' => $node->nid))->fetchField() > 0){
+    $node->remote_site_creation_enabled = 1;
+  }
+  else {
+    $node->remote_site_creation_enabled = 0;
+  }
+}
+
 
 /**
  * Implementation of hook_form_alter
  */
-function hosting_services_form_alter(&$form, &$form_state){
-  if($form['#token'] == 'platform_node_form'){
+function hosting_services_form_alter(&$form, &$form_state, $form_id){
+  if($form_id == 'platform_node_form'){
     $form['remote_site_creation_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enable this Platform for Remote Site Creation'),
       '#description' => t('Enables a platform to be used when creating sites via services.'),
       '#default_value' => $form['#node']->remote_site_creation_enabled,
     );
-  }   
+  }
 }
+

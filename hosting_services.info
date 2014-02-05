@@ -1,9 +1,10 @@
-core = "6.x"
+name = "Aegir Services API"
+description = "Provides Services API (3.x) integration for Hostmaster system."
+core = "7.x"
 dependencies[] = hosting_platform
 dependencies[] = hosting_site
 dependencies[] = services
 dependencies[] = hosting_client
 dependencies[] = hosting_signup
-description = "Provides Services API (3.x) integration for Hostmaster system."
-name = "Aegir Services API"
 package = Hosting
+
