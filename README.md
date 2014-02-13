@@ -69,3 +69,36 @@ if($response->code == 200){
   $enable_task = json_decode($response->data);
 }
 
+3. For many use cases, creating sites should be done via the client node and
+   client user. The use case is"
+   -  Set user accounts to be created when a client node is created.
+   -  Then add the below snippet to a custom module.
+   -  When making a create client call to your aegir install, the created client
+      node is created and returned with an account property containing the user
+      that was created including the oauth credentials.
+
+/**
+ * Implements hook_user_insert().
+ */
+function mymodule_user_insert(&$edit, $account, $category){
+  $consumer = new DrupalOAuthConsumer(user_password(32), user_password(32), array(
+    'callback_url' => 'example.com',
+    'uid' => $account->uid,
+    'name' => $account->mail,
+    'context' => 'aegir_authentication',
+    'provider_consumer' => TRUE,
+  ));
+  $consumer->write();
+
+}
+
+/**
+ * Implements hook_user_load().
+ */
+function mymodule_user_load($users) {
+  module_load_include('inc', 'oauth_common');
+  foreach ($users as $uid => $user) {
+    $ci = oauth_common_user_consumers($user->uid);
+    $users[$uid]->oauth = $ci;
+  }
+}

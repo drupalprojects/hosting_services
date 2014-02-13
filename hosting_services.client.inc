@@ -75,6 +75,11 @@ function hosting_services_client_save($name, $data = NULL){
   $client->status = 1;
   node_save($client);
 
+  if(variable_get('hosting_client_register_user', FALSE)){
+    $created_account = user_load($client->uid, TRUE);
+    $client->account = $created_account;
+  }
+
   return !empty($client->nid) ? $client : FALSE;
 }
 
