@@ -6,7 +6,6 @@
  * TODO Make use of the $rows and $offset parameters
  */
 function hosting_services_platform_list($rows = 0, $offset = 0){
-
   $conditions = '';
 
   if (is_numeric($rows)) {
@@ -15,10 +14,22 @@ function hosting_services_platform_list($rows = 0, $offset = 0){
   if ($conditions && is_numeric($offset)) {
     $conditions .= ' OFFSET ' . check_plain($offset);
   }
-  $platform_query = db_query('SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_services_platforms} hsp ON hsp.nid = n.nid INNER JOIN {hosting_platform} hp ON hp.nid = n.nid WHERE n.type = :platform AND hp.status = :status' . $conditions, array(':platform' => 'platform', ':status' => HOSTING_PLATFORM_ENABLED));
-  while($plat = $platform_query->fetchAssoc()){
-    $platforms[] = $plat;
+  $platform_query = db_query('SELECT n.nid, n.title FROM {node} n INNER JOIN {hosting_platform} hp ON hp.nid = n.nid WHERE n.type = :platform AND hp.status = :status' . $conditions, array(':platform' => 'platform', ':status' => HOSTING_PLATFORM_ENABLED));
+  $result = $platform_query->fetchAll();
+
+  $platforms = array();
+  foreach ($result as $platform){
+    $hsp_query = db_query('SELECT nid FROM {hosting_services_platforms} WHERE nid = :nid', array(':nid' => $platform->nid));
+
+    if ($hsp_query->fetchAssoc()) {
+      $platform->remote_site_creation_enabled = TRUE;
+    } else {
+      $platform->remote_site_creation_enabled = FALSE;
+    }
+
+    $platforms[] = $platform;
   }
+
   return $platforms;
 }
 

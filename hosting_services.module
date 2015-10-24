@@ -710,20 +710,21 @@ function hosting_services_node_update($node){
     'nid' => $node->nid,
     'vid' => $node->vid,
   );
-  $rec_check = db_query("SELECT COUNT(*) FROM {hosting_services_platforms}
+  $rec_check = db_query("SELECT COUNT(*) as total FROM {hosting_services_platforms}
                          WHERE nid = :nid AND vid = :vid",
                          array(':nid' => $node->nid, ':vid' => $node->vid))->fetchObject();
-  if ($node->remote_site_creation_enabled && $rec_check) {
+  if ($node->remote_site_creation_enabled && $rec_check && $rec_check->total > 0) {
     drupal_write_record('hosting_services_platforms', $data, 'nid');
   }
   else if ($node->remote_site_creation_enabled) {
     drupal_write_record('hosting_services_platforms', $data);
   }
-  else if(isset($node->services_enabled)){
+  else if(isset($node->remote_site_creation_enabled) && $node->remote_site_creation_enabled == FALSE){
     db_delete('hosting_services_platforms')
       ->condition('nid', $node->nid)
       ->execute();
   }
+
 }
 
 /**
@@ -761,6 +762,11 @@ function hosting_services_form_alter(&$form, &$form_state, $form_id){
       '#description' => t('Enables a platform to be used when creating sites via services.'),
       '#default_value' => $form['#node']->remote_site_creation_enabled,
     );
+
+    $form['#submit'][] = 'hosting_services_platform_form_submit';
   }
 }
 
+function hosting_services_platform_form_submit(&$form, &$form_state) {
+  $form['#node']->remote_site_creation_enabled = $form_state['values']['remote_site_creation_enabled'];
+}
