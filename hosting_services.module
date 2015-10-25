@@ -366,6 +366,38 @@ function hosting_services_services_resources() {
         ),
       ),
     ),
+    'actions' => array(
+      'get_task_list' => array(
+        'callback' => 'hosting_services_get_task_list',
+        'help' => t('Retrieve all current tasks for given site, platform or server'),
+        'access arguments' => array("get task"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The reference\'s node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'get_task_log' => array(
+        'callback' => 'hosting_services_get_task_log',
+        'help' => t('Fetch an Aegir task log'),
+        'access arguments' => array('get task'),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The reference\'s node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+    ),
   );
 
   // Site Services
