@@ -42,6 +42,19 @@ function hosting_services_platform_get($nid){
 }
 
 /**
+ * Returns a specific platform
+ */
+function hosting_services_platform_get_sites($nid){
+  $nodes = array();
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform = :platform", array(':platform' => $nid));
+  while ($row = $result->fetchObject()) {
+    $nodes[$row->nid] = node_load($row->nid);
+  }
+
+  return $nodes;
+}
+
+/**
  * Create tasks
  */
 function hosting_services_platform_task($type,  $nid) {

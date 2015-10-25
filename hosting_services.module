@@ -236,6 +236,21 @@ function hosting_services_services_resources() {
           ),
         ),
       ),
+      'sites' => array(
+        'callback' => 'hosting_services_platform_get_sites',
+        'help' => t('Get platform sites'),
+        'access arguments' => array("get site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The platform node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
     ),
   );
 
