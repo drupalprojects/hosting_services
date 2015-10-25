@@ -775,7 +775,7 @@ function hosting_services_form_alter(&$form, &$form_state, $form_id){
       '#type' => 'checkbox',
       '#title' => t('Enable this Platform for Remote Site Creation'),
       '#description' => t('Enables a platform to be used when creating sites via services.'),
-      '#default_value' => $form['#node']->remote_site_creation_enabled,
+      '#default_value' => isset($form['#node']->remote_site_creation_enabled) ? $form['#node']->remote_site_creation_enabled : 0,
     );
 
     $form['#submit'][] = 'hosting_services_platform_form_submit';
