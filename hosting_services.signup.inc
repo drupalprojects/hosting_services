@@ -8,6 +8,11 @@
  * Return the signup form
  */
 function hosting_services_signup_form() {
-  $form = drupal_get_form('hosting_signup_form');
-  return $form;
+  if (module_exists('hosting_signup')) {
+    $form = drupal_get_form('hosting_signup_form');
+    return $form;
+  }
+  else {
+    return t('The signup form module is not enabled.');
+  }
 }

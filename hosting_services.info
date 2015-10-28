@@ -5,6 +5,5 @@ dependencies[] = hosting_platform
 dependencies[] = hosting_site
 dependencies[] = services
 dependencies[] = hosting_client
-dependencies[] = hosting_signup
 package = Hosting
 
