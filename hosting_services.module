@@ -489,6 +489,22 @@ function hosting_services_services_resources() {
           ),
         ),
       ),
+      // We might not want to give the REST permission to get all nodes
+      'get_by_nid' => array(
+        'callback' => 'node_load',
+        'help' => t('Get site by nid'),
+        'access arguments' => array("get site"),
+        'file' => array('type' => 'mode', 'name' => 'node', 'module' => 'node'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
       'enable' => array(
         'callback' => 'hosting_services_site_task',
         'help' => t('Enable Site'),
