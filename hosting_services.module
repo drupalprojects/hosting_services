@@ -285,33 +285,10 @@ function hosting_services_services_resources() {
         array(
           'name' => 'nid',
           'type' => 'int',
-          'optional' => TRUE,
+          'optional' => FALSE,
           'description' => t('The task node id'),
           'source' => array('data' => 'nid'),
           'default value' => NULL,
-        ),
-        array(
-          'name' => 'data',
-          'type' => 'struct',
-          'optional' => TRUE,
-          'description' => t('Data to be used in constructing the task'),
-          'default value' => array(),
-          'source' => array('data' => 'data'),
-        ),
-        array(
-          'name' => 'options',
-          'type' => 'struct',
-          'optional' => TRUE,
-          'description' => t('Options specific to certain task types'),
-          'default value' => array(),
-          'source' => array('data' => 'options'),
-        ),
-        array(
-          'name' => 'rid',
-          'type' => 'int',
-          'optional' => FALSE,
-          'description' => t('The node id of the node to apply the task to'),
-          'source' => array('data' => 'rid'),
         ),
         array(
           'name' => 'type',
@@ -320,30 +297,8 @@ function hosting_services_services_resources() {
           'description' => t('The task type'),
           'source' => array('data' => 'type'),
         ),
-      ),
-    ),
-    'update' => array(
-      'callback' => 'hosting_services_save_task',
-      'help' => t('Update an aegir task'),
-      'access arguments' => array('create task'),
-      'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
-      'args' => array(
         array(
-          'name' => 'nid',
-          'type' => 'int',
-          'optional' => FALSE,
-          'description' => t('The task node id'),
-          'source' => array('path' => 0),
-        ),
-        array(
-          'name' => 'data',
-          'type' => 'struct',
-          'optional' => FALSE,
-          'description' => t('Data to be used in constructing the task'),
-          'source' => array('data' => 'data'),
-        ),
-        array(
-          'name' => 'options',
+          'name' => 'args',
           'type' => 'struct',
           'optional' => TRUE,
           'description' => t('Options specific to certain task types'),
@@ -352,6 +307,7 @@ function hosting_services_services_resources() {
         ),
       ),
     ),
+    // There's no update operation, we now use new nodes for each run
     'delete' => array(
       'callback' => 'node_delete',
       'help' => t('Delete an aegir task'),
