@@ -46,6 +46,10 @@ function hosting_services_permission(){
     'title' => t('Save Site'),
     'description' => t(''),
   );
+  $perms['log into site'] = array(
+    'title' => t('Log Into Site'),
+    'description' => t(''),
+  );
   $perms['get task'] = array(
     'title' => t('Get Task'),
     'description' => t(''),
@@ -451,6 +455,21 @@ function hosting_services_services_resources() {
         'help' => t('Get site by nid'),
         'access arguments' => array("get site"),
         'file' => array('type' => 'mode', 'name' => 'node', 'module' => 'node'),
+        'args' => array(
+          array(
+            'name' => 'nid',
+            'type' => 'string',
+            'optional' => FALSE,
+            'description' => t('The site node id'),
+            'source' => array('data' => 'nid'),
+          ),
+        ),
+      ),
+      'login_link' => array(
+        'callback' => 'hosting_services_site_login',
+        'help' => t('Log Into Site'),
+        'access arguments' => array("log into site"),
+        'file' => array('type' => 'inc', 'name' => 'hosting_services.site', 'module' => 'hosting_services'),
         'args' => array(
           array(
             'name' => 'nid',

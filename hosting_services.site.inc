@@ -47,6 +47,7 @@ function hosting_services_save_site($url, $data) {
 
 /**
  * Create tasks
+ * // TODO: Remove or fix this
  */
 function hosting_services_site_task($type,  $nid) {
   global $user;
@@ -66,4 +67,20 @@ function hosting_services_site_task($type,  $nid) {
 function _hosting_services_default_ip() {
   $http = node_load(variable_get('hosting_default_web_server', 0));
   return $http->ip_addresses;
+}
+
+/**
+ * This sends a login link to a site. The cached link would no longer be valid.
+ */
+function hosting_services_site_login($nid) {
+  $cache = cache_get("hosting:site:" . $nid . ":login_link");
+  $cid = "hosting:site:" . $nid . ":login_link";
+  $cache = cache_get($cid);
+  if (is_object($cache) && (REQUEST_TIME < $cache->data['expire'])) {
+    $theurl = $cache->data['link'];
+    return $theurl;
+  }
+  else {
+    return '';
+  }
 }
