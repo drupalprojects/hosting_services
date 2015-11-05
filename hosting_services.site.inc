@@ -47,7 +47,6 @@ function hosting_services_save_site($url, $data) {
 
 /**
  * Create tasks
- * // TODO: Remove or fix this
  */
 function hosting_services_site_task($type,  $nid) {
   global $user;
@@ -79,6 +78,21 @@ function hosting_services_site_login($nid) {
   if (is_object($cache) && (REQUEST_TIME < $cache->data['expire'])) {
     $theurl = $cache->data['link'];
     return $theurl;
+  }
+  else {
+    return '';
+  }
+}
+
+/**
+ * This tells the server the login link has been used and is no longer valid.
+ */
+function hosting_services_site_expire_login($nid) {
+  $cache = cache_get("hosting:site:" . $nid . ":login_link");
+  $cid = "hosting:site:" . $nid . ":login_link";
+  $cache = cache_get($cid);
+  if (is_object($cache)) {
+    cache_clear_all($cid, 'cache');
   }
   else {
     return '';
