@@ -46,7 +46,7 @@ function hosting_services_platform_get($nid){
  */
 function hosting_services_platform_get_sites($nid){
   $nodes = array();
-  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform = :platform", array(':platform' => $nid));
+  $result = db_query("SELECT nid FROM {hosting_site} WHERE platform = :platform AND status != :status_deleted", array(':platform' => $nid, ':status_deleted' => HOSTING_SITE_DELETED));
   while ($row = $result->fetchObject()) {
     $nodes[$row->nid] = node_load($row->nid);
   }
