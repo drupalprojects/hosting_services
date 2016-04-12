@@ -4,11 +4,12 @@
  */
 function hosting_services_list_sites() {
   $sites = array();
-  $site_result = db_query('SELECT nid, title FROM {node} WHERE type = :site', array(':site' => 'site'))->fetchAll();
+  $site_result = db_query("SELECT hs.*, node.title AS title FROM {hosting_site} hs INNER JOIN {node} ON hs.nid = node.nid WHERE hs.status <> :status_deleted", array(':status_deleted' => HOSTING_SITE_DELETED))->fetchAll();
 
   foreach($site_result as $site) {
     $sites[] = $site;
   }
+
   return $sites;
 }
 
