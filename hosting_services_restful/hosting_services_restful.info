@@ -1,5 +1,5 @@
 name = "Aegir REST Services"
-package = "Hosting"
+package = Aegir Web Services
 project = "hosting_services_restful"
 core = "7.x"
 dependencies[] = "features"

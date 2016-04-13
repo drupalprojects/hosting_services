@@ -1,5 +1,5 @@
 name = "Aegir Services Example Client"
-package = "Hosting"
+package = Aegir Web Services
 project = "hosting_services_client"
 description = "Example client module for Aegir Services."
 core = "7.x"
