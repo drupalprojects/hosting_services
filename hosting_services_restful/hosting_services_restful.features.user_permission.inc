@@ -23,9 +23,9 @@ function hosting_services_restful_user_default_permissions() {
     ),
   );
 
-  // Exported permission: create task
-  $permissions['create task'] = array(
-    'name' => 'create task',
+  // Exported permission: create backup task
+  $permissions['create backup task'] = array(
+    'name' => 'create backup task',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
     ),
