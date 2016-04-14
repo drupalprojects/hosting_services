@@ -11,7 +11,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'administer clients',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -21,7 +20,6 @@ function hosting_services_restful_user_default_permissions() {
     'roles' => array(
       '0' => 'aegir account manager',
       '1' => 'aegir remote manager (RESTful)',
-      '2' => 'anonymous user',
     ),
   );
 
@@ -30,7 +28,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'create task',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -39,7 +36,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'get platform',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -48,7 +44,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'get profile',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -57,7 +52,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'get site',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -66,7 +60,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'get task',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -75,7 +68,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'list platforms',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -84,7 +76,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'list profiles',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -93,7 +84,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'save site',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -102,7 +92,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'suspend client sites',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -111,7 +100,6 @@ function hosting_services_restful_user_default_permissions() {
     'name' => 'unsuspend client sites',
     'roles' => array(
       '0' => 'aegir remote manager (RESTful)',
-      '1' => 'anonymous user',
     ),
   );
 
@@ -122,7 +110,6 @@ function hosting_services_restful_user_default_permissions() {
       '0' => 'aegir account manager',
       '1' => 'aegir client',
       '2' => 'aegir remote manager (RESTful)',
-      '3' => 'anonymous user',
     ),
   );
 
