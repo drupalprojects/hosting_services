@@ -283,7 +283,7 @@ function hosting_services_services_resources() {
     'create' => array(
       'callback' => 'hosting_services_save_task',
       'help' => t('Create an aegir task'),
-      'access arguments' => array('create task'),
+      'access arguments' => array('create task content'),
       'file' => array('type' => 'inc', 'name' => 'hosting_services.task', 'module' => 'hosting_services'),
       'args' => array(
         array(
@@ -315,7 +315,7 @@ function hosting_services_services_resources() {
     'delete' => array(
       'callback' => 'node_delete',
       'help' => t('Delete an aegir task'),
-      'access arguments' => array('create task'),
+      'access arguments' => array('delete any task content'),
       'args' => array(
         array(
           'name' => 'nid',
