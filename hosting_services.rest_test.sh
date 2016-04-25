@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Set command paths.
+ECHO=/bin/echo
+
+# Make sure that the parameters are specified.
+if [ -z "$1" ]; then
+  $ECHO "Usage: $0 <hostname>"
+  exit 1
+fi
+
 # Get arguments
 url=$1
 
