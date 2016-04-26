@@ -6,11 +6,20 @@
  * Create a task
  */
 function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
+
+  // Attempt to load the node we're operating on.
   $node = node_load($nid);
-  if ($node) {
-    $task = hosting_add_task($nid, $type, $args);
+
+  // Bail if a node couldn't be loaded.
+  if (!$node) {
+    watchdog('hosting_services', 'Cannot create task: Node "%nid" cannot be loaded.', array('%nid' => $nid), WATCHDOG_ERROR);
+    return FALSE;
   }
 
+  // Perform action on loaded node.
+  $task = hosting_add_task($nid, $type, $args);
+
+  // Return the resulting task.
   return $task;
 }
 
