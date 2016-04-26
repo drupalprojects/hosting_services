@@ -65,6 +65,43 @@ function hosting_saas_settings_validate($form, &$form_state) {
 }
 
 /**
+ * Implements hook_services_request_preprocess_alter().
+ *
+ * Add missing configuration to site clone requests.
+ */
+function hosting_saas_services_request_preprocess_alter($controller, &$args, $options) {
+  if (($options['resource'] == 'task') &&
+      ($controller['callback'] == 'hosting_services_save_task') &&
+      ($args[1] == 'clone')) {
+
+    // Ensure that we have a URL for the new site.
+    if (empty($args[2]['new_uri'])) {
+      watchdog('hosting_saas', "Cannot populate site clone task: 'options[new_uri]' not set in POST request's form data.", array(), WATCHDOG_ERROR);
+      return;
+    }
+
+    // Set unset arguments so that we may reference them.
+    if (empty($args[2]['new_db_server'])) {
+      $args[2]['new_db_server'] = '';
+    }
+    if (empty($args[2]['target_platform'])) {
+      $args[2]['target_platform'] = '';
+    }
+
+    // Get references to all of the arguments.
+    $cloned_node_nid = &$args[0];
+    $task_type = &$args[1];
+    $new_uri = &$args[2]['new_uri'];
+    $db_server_nid = &$args[2]['new_db_server'];
+    $target_platform_nid = &$args[2]['target_platform'];
+
+    // Set empty arguments as per the configuration.
+
+
+  }
+}
+
+/**
  * Makes a site based on the settings.
  *
  * @param $url            The desired URL (FQDN)
