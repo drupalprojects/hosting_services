@@ -128,13 +128,6 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
 
   $model_site_nid = variable_get('hosting_saas_template_site_nid', NULL);
 
-  // Bail out if there's already a queued clone task for our model site.
-  // @todo Check if this is really necessary, as it now seems valid.
-  if (hosting_saas_is_clone_ongoing($model_site_nid)) {
-    $error_message = "A clone is already ongoing or queued.";
-    return FALSE;
-  }
-
   if (!hosting_domain_allowed($url)) { 
     $error_message = "This domain is not allowed. It is likely already being used.";
     return FALSE;
@@ -154,32 +147,3 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
   return TRUE;
 }
 
-/**
- * Determine if the clone of a particular site is on-going.
- *
- * This tells us whether there's a clone task running or queued for the site.
- *
- * @param $site_nid
- *   The node ID of the site.
- * @return
- *   TRUE if clone is in progress, FALSE otherwise.
- * @todo
- *   Use an EntityFieldQuery instead of checking tables directly.
- */
-function hosting_saas_is_clone_ongoing($site_nid) {
-  $sql = "SELECT n.nid as nid, ht.rid, task_status, executed
-          FROM hosting_task ht INNER JOIN node n
-          ON ht.nid = n.nid AND ht.vid = n.vid
-          WHERE ht.rid = %d AND ht.task_type = 'clone'
-          AND (ht.task_status = -1 OR ht.task_status = 0)
-          LIMIT 1";
-
-  // If there's a result matching the above criteria, report confirmation.
-  // Otherwise, there is no on-going clone.
-  if (db_query($sql, $site_nid)->fetchObject()) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
-}
