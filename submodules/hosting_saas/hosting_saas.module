@@ -57,15 +57,6 @@ function hosting_saas_settings() {
     '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
   );
 
-  $example = hosting_saas_pseudo_random_uuid();
-
-  $form['hosting_saas_api_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Private API key'),
-    '#description' => t('This key can be set as a basic API access requirement. Example: !example', array('!example' => $example)),
-    '#default_value' => variable_get('hosting_saas_api_key', ''),
-  );
-  
   return system_settings_form($form);
 }
 
@@ -137,71 +128,6 @@ function hosting_saas_is_clone_ongoing($site_nid) {
   
   // TRUE = Go ahead, FALSE = stop
   if (db_query($sql, $site_nid)->fetchObject()) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
-}
-
-/**
- * Returns a pseudo-random uuid
- */
-function hosting_saas_pseudo_random_uuid() {
-    $namespace = '';
-    $name = time();
-
-    // Get hexadecimal components of namespace
-    $nhex = str_replace(array('-','{','}'), '', $namespace);
-
-    // Binary Value
-    $nstr = '';
-
-    // Convert Namespace UUID to bits
-    for($i = 0; $i < strlen($nhex); $i+=2) {
-      $nstr .= chr(hexdec($nhex[$i].$nhex[$i+1]));
-    }
-
-    // Calculate hash value
-    $hash = sha1($nstr . $name);
-
-    return sprintf('%08s-%04s-%04x-%04x-%12s',
-
-      // 32 bits for "time_low"
-      substr($hash, 0, 8),
-
-      // 16 bits for "time_mid"
-      substr($hash, 8, 4),
-
-      // 16 bits for "time_hi_and_version",
-      // four most significant bits holds version number 5
-      (hexdec(substr($hash, 12, 4)) & 0x0fff) | 0x5000,
-
-      // 16 bits, 8 bits for "clk_seq_hi_res",
-      // 8 bits for "clk_seq_low",
-      // two most significant bits holds zero and one for variant DCE1.1
-      (hexdec(substr($hash, 16, 4)) & 0x3fff) | 0x8000,
-
-      // 48 bits for "node"
-      substr($hash, 20, 12)
-    );
-}
-
-/**
- * Implements hook_hosting_restapi_check_access API check for hosting_restapi.
- *
- * Note: We can't have hosting_restapi as a dependency as that would be
- * circular. This hook won't fire unless hosting_restapi is enabled though, so
- * it seems like a reasonably useful and simple thing to have.
- */
-function hosting_saas_hosting_restapi_check_access($key = NULL, $secret = NULL) {
-  $api_key = variable_get('hosting_saas_api_key', '');
-
-  if (empty($api_key)) {
-    return;
-  }
-
-  if ($api_key == $key) {
     return TRUE;
   }
   else {
