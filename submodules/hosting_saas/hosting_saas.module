@@ -1,0 +1,210 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function hosting_saas_menu() {
+  $items['admin/hosting/saas'] = array(
+    'title' => 'SaaS',
+    'description' => 'Configure software-as-a-service settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_saas_settings'),
+    'access arguments' => array('administer modules'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Configuration form for hosting_saas
+ */
+function hosting_saas_settings() {
+  $form['hosting_saas_master_domain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Master domain'),
+    '#description' => t('The master domain for your SaaS sites. Accepted URLs will be *.thisfield'),
+    '#default_value' => variable_get('hosting_saas_master_domain', 'localhost'),
+    '#required' => TRUE,
+  );
+
+  $form['hosting_saas_template_site_nid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Template site'),
+    '#description' => t('The nid of the site to clone on a new request. Optionnal if using an install-based method.'),
+    '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
+  );
+
+  $form['hosting_saas_db_server'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Database server'),
+    '#description' => t('The nid of the db server to use.'),
+    '#default_value' => variable_get('hosting_saas_db_server', ''),
+    '#required' => TRUE,
+  );
+
+  $form['hosting_saas_target_platform'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Target platform'),
+    '#description' => t('The nid of the platform on which to create the site when processing a request.'),
+    '#default_value' => variable_get('hosting_saas_target_platform', ''),
+    '#required' => TRUE,
+  );
+
+  $form['hosting_saas_max_capacity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max Saas sites'),
+    '#description' => t('The maximum number of SaaS sites allowed on the server. This will only count active sites.'),
+    '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
+  );
+
+  $example = hosting_saas_pseudo_random_uuid();
+
+  $form['hosting_saas_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Private API key'),
+    '#description' => t('This key can be set as a basic API access requirement. Example: !example', array('!example' => $example)),
+    '#default_value' => variable_get('hosting_saas_api_key', ''),
+  );
+  
+  return system_settings_form($form);
+}
+
+function hosting_saas_settings_validate($form, &$form_state) {
+  // TODO validate nids
+}
+
+/**
+ * Makes a site based on the settings.
+ *
+ * @param $url            The desired URL (FQDN)
+ * @param $error_message  (Outgoing.) The error message that can be set on fail
+ *
+ * @return TRUE if successful, FALSE otherse. If this fails, the $error_message
+ * will be set.
+ */
+function hosting_saas_clone_site_from_template($url, &$error_message = '') {
+  $variables = array(
+    'hosting_saas_target_platform',
+    'hosting_saas_db_server',
+    'hosting_saas_template_site_nid',
+  );
+
+  foreach ($variables as $to_check) {
+    if (variable_get($to_check, NULL) === NULL) {
+      watchdog('hosting_saas', "Variable hasn't been chosen yet: " . $to_check, array(), WATCHDOG_WARNING);
+      
+      $error_message = "Variable hasn't been chosen yet: " . $to_check;
+      return FALSE;
+    }
+  }
+
+  $model_site_nid = variable_get('hosting_saas_template_site_nid', NULL);
+
+  // TODO: Bail out if there's already a queued clone task for our model site.
+  if (hosting_saas_is_clone_ongoing($model_site_nid)) {
+    $error_message = "A clone is already ongoing or queued.";
+    return FALSE;
+  }
+
+  if (!hosting_domain_allowed($url)) { 
+    $error_message = "This domain is not allowed. It is likely already being used.";
+    return FALSE;
+  }
+
+  $args = array(
+    'new_uri' => $url,
+    'new_db_server' => variable_get('hosting_saas_db_server', NULL),
+    'target_platform' => variable_get('hosting_saas_target_platform', NULL),
+  );
+
+  // Allow other modules to modify the options
+  module_invoke_all('hosting_saas_clone', $url, $args);
+
+  hosting_add_task($model_site_nid, 'clone', $args);
+
+  return TRUE;
+}
+
+function hosting_saas_is_clone_ongoing($site_nid) {
+  // This tells us whether there's a clone task running or queued
+  // for the site
+  $sql = "SELECT n.nid as nid, ht.rid, task_status, executed
+          FROM hosting_task ht INNER JOIN node n
+          ON ht.nid = n.nid AND ht.vid = n.vid
+          WHERE ht.rid = %d AND ht.task_type = 'clone'
+          AND (ht.task_status = -1 OR ht.task_status = 0)
+          LIMIT 1";
+  
+  // TRUE = Go ahead, FALSE = stop
+  if (db_query($sql, $site_nid)->fetchObject()) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Returns a pseudo-random uuid
+ */
+function hosting_saas_pseudo_random_uuid() {
+    $namespace = '';
+    $name = time();
+
+    // Get hexadecimal components of namespace
+    $nhex = str_replace(array('-','{','}'), '', $namespace);
+
+    // Binary Value
+    $nstr = '';
+
+    // Convert Namespace UUID to bits
+    for($i = 0; $i < strlen($nhex); $i+=2) {
+      $nstr .= chr(hexdec($nhex[$i].$nhex[$i+1]));
+    }
+
+    // Calculate hash value
+    $hash = sha1($nstr . $name);
+
+    return sprintf('%08s-%04s-%04x-%04x-%12s',
+
+      // 32 bits for "time_low"
+      substr($hash, 0, 8),
+
+      // 16 bits for "time_mid"
+      substr($hash, 8, 4),
+
+      // 16 bits for "time_hi_and_version",
+      // four most significant bits holds version number 5
+      (hexdec(substr($hash, 12, 4)) & 0x0fff) | 0x5000,
+
+      // 16 bits, 8 bits for "clk_seq_hi_res",
+      // 8 bits for "clk_seq_low",
+      // two most significant bits holds zero and one for variant DCE1.1
+      (hexdec(substr($hash, 16, 4)) & 0x3fff) | 0x8000,
+
+      // 48 bits for "node"
+      substr($hash, 20, 12)
+    );
+}
+
+/**
+ * Implements hook_hosting_restapi_check_access API check for hosting_restapi.
+ *
+ * Note: We can't have hosting_restapi as a dependency as that would be
+ * circular. This hook won't fire unless hosting_restapi is enabled though, so
+ * it seems like a reasonably useful and simple thing to have.
+ */
+function hosting_saas_hosting_restapi_check_access($key = NULL, $secret = NULL) {
+  $api_key = variable_get('hosting_saas_api_key', '');
+
+  if (empty($api_key)) {
+    return;
+  }
+
+  if ($api_key == $key) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
