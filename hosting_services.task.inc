@@ -1,7 +1,16 @@
 <?php
 
 /**
- * Create a task
+ * Create a task.
+ *
+ * @param $nid
+ *   The ID of the node to act upon.
+ * @param $type
+ *   A string representing the task type to create.
+ * @param $args
+ *   An array with arguments specific to the type of task.
+ * @return
+ *   The fully loaded task, or FALSE if unable to create.
  */
 function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
 
