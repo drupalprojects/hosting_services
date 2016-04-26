@@ -1,4 +1,4 @@
-name = "Aegir REST Services"
+name = Aegir Services Example REST Endpoint
 package = Aegir Web Services
 project = "hosting_services_restful"
 core = "7.x"
