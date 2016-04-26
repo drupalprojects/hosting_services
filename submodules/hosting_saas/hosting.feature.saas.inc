@@ -3,21 +3,16 @@
 
 /**
  * @file
- *   The hosting feature definition for SaaS
+ *   The Hosting feature definition for SaaS.
  */
 
 /**
- * Register a hosting feature with Aegir.
- *
- * This will be used to generate the 'admin/hosting' page.
- *
- * @return
- *  associative array indexed by feature key.
+ * Implements hook_hosting_feature().
  */
 function hosting_saas_hosting_feature() {
   $features['saas'] = array(
     'title' => t('SaaS'),
-    'description' => t('Retains software-as-a-service settings.'),
+    'description' => t('Retains software-as-a-service settings for site-factory set-ups.'),
     'status' => HOSTING_FEATURE_DISABLED,
     'module' => 'hosting_saas',
     'group' => 'experimental'
