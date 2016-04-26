@@ -23,19 +23,6 @@ function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
   return $task;
 }
 
-// TODO: Remove this? Seems pointless.
-function hosting_services_site_task($type,  $nid) {
-  global $user;
-  $tasks = hosting_available_tasks('site');
-  if(array_key_exists($type, $tasks)){
-    $task = hosting_add_task($nid, $type);
-    return $task;
-  }
-  else{
-    return FALSE;
-  }
-}
-
 /**
  * Get task status
  */
