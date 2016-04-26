@@ -1,0 +1,14 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions for Aegir SaaS.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function hosting_saas_uninstall() {
+  // Remove any set variables.
+  variable_del('hosting_saas_api_key');
+}
+
