@@ -3,3 +3,4 @@ description = Retains software-as-a-service settings for site-factory set-ups.
 core = 7.x
 package = Aegir Web Services
 dependencies[] = hosting_services
+configure = admin/hosting/saas
