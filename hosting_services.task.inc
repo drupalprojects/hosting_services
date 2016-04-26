@@ -1,7 +1,5 @@
 <?php
 
-// TODO: Check that the nid is a really of type task...
-
 /**
  * Create a task
  */
@@ -25,6 +23,8 @@ function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
 
 /**
  * Get task status
+ *
+ * @todo Check that the nid is really of type task.
  */
 function hosting_services_get_task($nid){
   return node_load($nid);
