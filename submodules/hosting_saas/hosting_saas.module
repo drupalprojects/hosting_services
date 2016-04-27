@@ -60,8 +60,8 @@ function hosting_saas_settings() {
 
   $form['hosting_saas_max_capacity'] = array(
     '#type' => 'textfield',
-    '#title' => t('Max Saas sites'),
-    '#description' => t('The maximum number of SaaS sites allowed on the server. This will only count active sites.'),
+    '#title' => t('Maximum number of sites'),
+    '#description' => t('The maximum number of SaaS sites allowed on the server. This will only count active sites. For an unlimited number of sites, leave this value at zero.'),
     '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
   );
 
@@ -120,7 +120,48 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     // Set the ID of the platform if it wasn't provided.
 
 
+    // Ensure maximum capacity hasn't been reached.
+    $capacity = variable_get('hosting_saas_max_capacity', '0');
+    if (hosting_saas_at_full_capacity($target_platform_nid, $capacity) === TRUE) {
+      // If it has, cause a failure and report it.
+      $cloned_node_nid = NULL;
+      watchdog('hosting_saas', "Cannot fulfill site clone task: The maximum number of sites have already been provisioned through this service.", array(), WATCHDOG_ALERT);
+      return;
+    }
   }
+}
+
+/**
+ * Check to see if we're at the maximum number of sites allowed.
+ *
+ * @param $platform
+ *   The platform whose capacity is to be checked.
+ * @param $capacity
+ *   The total number of sites allowed on the system.
+ * @return
+ *   TRUE if we're at capacity, FALSE otherwise.
+ */
+function hosting_saas_at_full_capacity($platform, $capacity) {
+
+  // If there's no limit, we can never be at capacity.
+  if (intval($capacity) <= 0) {
+    return FALSE;
+  }
+
+  // Fetch the number of sites on the platform.
+  $count = hosting_site_count($platform);
+
+  // If the number of sites has reached the limit, report a problem.
+  if ($count >= $capacity) {
+    return TRUE;
+  }
+
+  // Otherwise, everything is fine. Leave the flag down with log entry.
+  watchdog('hosting_saas', 'Site count / capacity: %count / %capacity', array(
+    '%count' => $count,
+    '%capacity' => $capacity,
+  ));
+  return FALSE;
 }
 
 /**
