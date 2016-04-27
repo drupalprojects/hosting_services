@@ -58,6 +58,13 @@ function hosting_saas_settings() {
     '#default_value' => variable_get('hosting_saas_target_platform', ''),
   );
 
+  $form['hosting_saas_max_capacity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max Saas sites'),
+    '#description' => t('The maximum number of SaaS sites allowed on the server. This will only count active sites.'),
+    '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
+  );
+
   return system_settings_form($form);
 }
 

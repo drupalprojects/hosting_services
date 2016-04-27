@@ -10,6 +10,5 @@
 function hosting_saas_uninstall() {
   // Remove any set variables.
   variable_del('hosting_saas_api_key');
-  variable_del('hosting_saas_max_capacity');
 }
 
