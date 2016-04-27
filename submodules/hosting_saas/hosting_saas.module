@@ -89,14 +89,28 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       $args[2]['target_platform'] = '';
     }
 
-    // Get references to all of the arguments.
+    // Get references to all of the alterable or otherwise useful arguments.
     $cloned_node_nid = &$args[0];
-    $task_type = &$args[1];
     $new_uri = &$args[2]['new_uri'];
     $db_server_nid = &$args[2]['new_db_server'];
     $target_platform_nid = &$args[2]['target_platform'];
 
-    // Set empty arguments as per the configuration.
+    // Ensure the new URL is valid.
+
+
+    // Set the ID of the site node to clone if it wasn't provided.
+    if (empty($cloned_node_nid)) {
+      if (empty($cloned_node_nid_saved = variable_get('hosting_saas_template_site_nid', ''))) {
+        watchdog('hosting_saas', "Cannot populate site clone task: ID of site to clone from was not specified. Either save this in the settings, or provide it in the request by setting 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
+        return;
+      }
+      $cloned_node_nid = $cloned_node_nid_saved;
+    }
+
+    // Set the ID of the database server if it wasn't provided.
+
+
+    // Set the ID of the platform if it wasn't provided.
 
 
   }
