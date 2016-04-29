@@ -8,7 +8,6 @@
  * Implements hook_install().
  */
 function hosting_saas_install() {
-
   // Add role.
   $roles = user_roles();
   if (!in_array(HOSTING_SAAS_ROLE, $roles)) {
@@ -18,11 +17,25 @@ function hosting_saas_install() {
   }
 
   // Add user.
-
+  if (user_load_by_name(HOSTING_SAAS_USER) === FALSE) {
+    $role = user_role_load_by_name(HOSTING_SAAS_ROLE);
+    $user = array(
+      'name' => HOSTING_SAAS_USER,
+      // Disable it so that it can't be used for logins.
+      'status' => 0,
+      'roles' => array(
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+        $role->rid => HOSTING_SAAS_ROLE,
+      ),
+    );
+    user_save('', $user);
+  }
 }
 
 /**
  * Implements hook_uninstall().
+ *
+ * @todo Delete any other variables that aren't listed here.
  */
 function hosting_saas_uninstall() {
   // Load constants and other things from the module file.
@@ -32,7 +45,9 @@ function hosting_saas_uninstall() {
   variable_del('hosting_saas_api_key');
 
   // Remove user.
-
+  if ($user = user_load_by_name(HOSTING_SAAS_USER)) {
+    user_delete($user->uid);
+  }
 
   // Remove role.
   user_role_delete(HOSTING_SAAS_ROLE);
