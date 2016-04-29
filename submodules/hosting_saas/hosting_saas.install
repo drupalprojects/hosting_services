@@ -30,6 +30,9 @@ function hosting_saas_install() {
     );
     user_save('', $user);
   }
+
+  // Set the role to be used by Services API Key Authentication.
+  variable_set('service_api_key_role', HOSTING_SAAS_ROLE);
 }
 
 /**
