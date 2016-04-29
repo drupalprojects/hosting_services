@@ -220,3 +220,72 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
   return TRUE;
 }
 
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function hosting_saas_ctools_plugin_api($owner, $api) {
+  // Ensure that we'll be able to register our Services endpoint.
+  if (($owner == 'services') && ($api == 'services')) {
+    return array(
+      'version' => 3,
+    );
+  }
+}
+
+/**
+ * Implements hook_default_services_endpoint().
+ *
+ * Register our Services endpoint.
+ */
+function hosting_saas_default_services_endpoint() {
+
+  // This is the configuration for our endpoint. It differs from a UI export
+  // in that we're generating a pseudo-random API key through a function call.
+  $endpoint = new stdClass();
+  $endpoint->disabled = FALSE; /* Edit this to true to make a default endpoint disabled initially */
+  $endpoint->api_version = 3;
+  $endpoint->name = 'hosting_saas';
+  $endpoint->server = 'rest_server';
+  $endpoint->path = 'aegir/saas';
+  $endpoint->authentication = array(
+    'services_api_key_auth' => array(
+      // The API key being defined here will actually change every time the
+      // configuration is loaded. This is a security feature to prevent a fixed
+      // or empty one from being used for unauthorized remote access. To
+      // generate a stable one that can be used for legitimate access
+      // consistently, an administrator must manually save the authentication
+      // form to override these default settings.
+      'api_key' => services_api_key_auth_generate_key(),
+      'user' => 'Aegir SaaS',
+    ),
+  );
+  $endpoint->server_settings = array();
+  $endpoint->resources = array(
+    'hosting_site' => array(
+      'alias' => 'site',
+      'operations' => array(
+        'retrieve' => array(
+          'enabled' => '1',
+        ),
+        'index' => array(
+          'enabled' => '1',
+        ),
+      ),
+    ),
+    'hosting_task' => array(
+      'alias' => 'task',
+      'operations' => array(
+        'create' => array(
+          'enabled' => '1',
+        ),
+      ),
+    ),
+  );
+  $endpoint->debug = 0;
+
+  // Add the single endpoint definition to the collection.
+  $endpoints['hosting_saas'] = $endpoint;
+
+  // Return the collection.
+  return $endpoints;
+}
