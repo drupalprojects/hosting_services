@@ -5,10 +5,36 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function hosting_saas_install() {
+
+  // Add role.
+  $roles = user_roles();
+  if (!in_array(HOSTING_SAAS_ROLE, $roles)) {
+    $role = new stdClass();
+    $role->name = HOSTING_SAAS_ROLE;
+    user_role_save($role);
+  }
+
+  // Add user.
+
+}
+
+/**
  * Implements hook_uninstall().
  */
 function hosting_saas_uninstall() {
+  // Load constants and other things from the module file.
+  drupal_load('module', 'hosting_saas');
+
   // Remove any set variables.
   variable_del('hosting_saas_api_key');
+
+  // Remove user.
+
+
+  // Remove role.
+  user_role_delete(HOSTING_SAAS_ROLE);
 }
 

@@ -11,6 +11,16 @@
  */
 
 /**
+ * Define the role created by the module.
+ */
+const HOSTING_SAAS_ROLE = "aegir web services";
+
+/**
+ * Define the user created by the module.
+ */
+const HOSTING_SAAS_USER = "Aegir SaaS";
+
+/**
  * Implementation of hook_menu().
  */
 function hosting_saas_menu() {
