@@ -136,14 +136,20 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     // Set the ID of the database server if it wasn't provided.
     if (empty($db_server_nid)) {
       if (empty($db_server_nid_saved = variable_get('hosting_saas_db_server', ''))) {
-        watchdog('hosting_saas', "Cannot populate site clone task: Database server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data.", array(), WATCHDOG_ERROR);
+        watchdog('hosting_saas', "Cannot populate site clone task: Target DB server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data.", array(), WATCHDOG_ERROR);
         return;
       }
       $db_server_nid = $db_server_nid_saved;
     }
 
     // Set the ID of the platform if it wasn't provided.
-
+    if (empty($target_platform_nid)) {
+      if (empty($target_platform_nid_saved = variable_get('hosting_saas_target_platform', ''))) {
+        watchdog('hosting_saas', "Cannot populate site clone task: Target platform ID not specified. Either save it in the settings, or provide the server node ID as options[target_platform] in the POST form data.", array(), WATCHDOG_ERROR);
+        return;
+      }
+      $target_platform_nid = $target_platform_nid_saved;
+    }
 
     // Ensure maximum capacity hasn't been reached.
     $capacity = variable_get('hosting_saas_max_capacity', '0');
