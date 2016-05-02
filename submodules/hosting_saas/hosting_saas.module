@@ -94,7 +94,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
 
     // Ensure that we have a URL for the new site.
     if (empty($args[2]['new_uri'])) {
-      watchdog('hosting_saas', "Cannot populate site clone task: 'options[new_uri]' not set in POST request's form data.", array(), WATCHDOG_ERROR);
+      watchdog('hosting_saas', "Cannot populate site clone task: URL of the new site was not specified. It must be provided in the POST form data as 'options[new_uri]'.", array(), WATCHDOG_ERROR);
       return;
     }
 
@@ -117,7 +117,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     if (!hosting_saas_url_matches_domain($new_uri, $domain)) {
       // The URL doesn't fit the configured domain.
       $cloned_node_nid = NULL;
-      watchdog('hosting_saas', "Cannot fulfill site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
+      watchdog('hosting_saas', "Cannot populate site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
         '%url' => $new_uri,
         '%domain' => $domain,
       ), WATCHDOG_ERROR);
@@ -127,14 +127,20 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     // Set the ID of the site node to clone if it wasn't provided.
     if (empty($cloned_node_nid)) {
       if (empty($cloned_node_nid_saved = variable_get('hosting_saas_template_site_nid', ''))) {
-        watchdog('hosting_saas', "Cannot populate site clone task: ID of site to clone from was not specified. Either save this in the settings, or provide it in the request by setting 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
+        watchdog('hosting_saas', "Cannot populate site clone task: ID of site to clone was not specified. Either save it in the settings, or provide the site node ID as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
         return;
       }
       $cloned_node_nid = $cloned_node_nid_saved;
     }
 
     // Set the ID of the database server if it wasn't provided.
-
+    if (empty($db_server_nid)) {
+      if (empty($db_server_nid_saved = variable_get('hosting_saas_db_server', ''))) {
+        watchdog('hosting_saas', "Cannot populate site clone task: Database server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data.", array(), WATCHDOG_ERROR);
+        return;
+      }
+      $db_server_nid = $db_server_nid_saved;
+    }
 
     // Set the ID of the platform if it wasn't provided.
 
