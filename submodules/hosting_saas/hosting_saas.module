@@ -113,7 +113,16 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $target_platform_nid = &$args[2]['target_platform'];
 
     // Ensure the new URL is valid.
-
+    $domain = variable_get('hosting_saas_master_domain', 'localhost');
+    if (!hosting_saas_url_matches_domain($new_uri, $domain)) {
+      // The URL doesn't fit the configured domain.
+      $cloned_node_nid = NULL;
+      watchdog('hosting_saas', "Cannot fulfill site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
+        '%url' => $new_uri,
+        '%domain' => $domain,
+      ), WATCHDOG_ERROR);
+      return;
+    }
 
     // Set the ID of the site node to clone if it wasn't provided.
     if (empty($cloned_node_nid)) {
@@ -138,6 +147,32 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       watchdog('hosting_saas', "Cannot fulfill site clone task: The maximum number of sites have already been provisioned through this service.", array(), WATCHDOG_ALERT);
       return;
     }
+  }
+}
+
+/**
+ * Check to see if a given URL falls within a specific domain.
+ *
+ * @param $url
+ *   The URL the check against the domain.
+ * @param $domain
+ *   The domain to compare with the URL.
+ * @return
+ *   TRUE if the URL is in the domain, FALSE otherwise.
+ */
+function hosting_saas_url_matches_domain($url, $domain) {
+  // Prefix the URL with a dot.
+  $dot_domain = '.' . $domain;
+
+  // Get its length.
+  $length = strlen($domain) + 1;
+
+  // Compare it with the domain.
+  if (substr_compare($url, $dot_domain, -$length, $length) === 0) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
   }
 }
 
@@ -193,7 +228,7 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
   foreach ($variables as $to_check) {
     if (variable_get($to_check, NULL) === NULL) {
       watchdog('hosting_saas', "Variable hasn't been chosen yet: " . $to_check, array(), WATCHDOG_WARNING);
-      
+
       $error_message = "Variable hasn't been chosen yet: " . $to_check;
       return FALSE;
     }
@@ -201,7 +236,7 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
 
   $model_site_nid = variable_get('hosting_saas_template_site_nid', NULL);
 
-  if (!hosting_domain_allowed($url)) { 
+  if (!hosting_domain_allowed($url)) {
     $error_message = "This domain is not allowed. It is likely already being used.";
     return FALSE;
   }
