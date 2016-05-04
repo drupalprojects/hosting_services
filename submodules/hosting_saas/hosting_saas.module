@@ -88,7 +88,8 @@ function hosting_saas_settings_validate($form, &$form_state) {
  * Add missing configuration to site clone requests.
  */
 function hosting_saas_services_request_preprocess_alter($controller, &$args, $options) {
-  if (($options['resource'] == 'task') &&
+  if (($GLOBALS['user']->name == HOSTING_SAAS_USER) &&
+      ($options['resource'] == 'task') &&
       ($controller['callback'] == 'hosting_services_save_task') &&
       ($args[1] == 'clone')) {
 
