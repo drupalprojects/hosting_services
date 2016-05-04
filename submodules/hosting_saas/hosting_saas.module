@@ -263,47 +263,6 @@ function hosting_saas_at_full_capacity($platform, $capacity) {
 }
 
 /**
- * Makes a site based on the settings.
- *
- * @param $url            The desired URL (FQDN)
- * @param $error_message  (Outgoing.) The error message that can be set on fail
- *
- * @return TRUE if successful, FALSE otherse. If this fails, the $error_message
- * will be set.
- */
-function hosting_saas_clone_site_from_template($url, &$error_message = '') {
-  $variables = array(
-    'hosting_saas_target_platform',
-    'hosting_saas_db_server',
-    'hosting_saas_template_site_nid',
-  );
-
-  foreach ($variables as $to_check) {
-    if (variable_get($to_check, NULL) === NULL) {
-      watchdog('hosting_saas', "Variable hasn't been chosen yet: " . $to_check, array(), WATCHDOG_WARNING);
-
-      $error_message = "Variable hasn't been chosen yet: " . $to_check;
-      return FALSE;
-    }
-  }
-
-  $model_site_nid = variable_get('hosting_saas_template_site_nid', NULL);
-
-  $args = array(
-    'new_uri' => $url,
-    'new_db_server' => variable_get('hosting_saas_db_server', NULL),
-    'target_platform' => variable_get('hosting_saas_target_platform', NULL),
-  );
-
-  // Allow other modules to modify the options
-  module_invoke_all('hosting_saas_clone', $url, $args);
-
-  hosting_add_task($model_site_nid, 'clone', $args);
-
-  return TRUE;
-}
-
-/**
  * Implements hook_ctools_plugin_api().
  */
 function hosting_saas_ctools_plugin_api($owner, $api) {
