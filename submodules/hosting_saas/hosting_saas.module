@@ -145,14 +145,22 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $db_server_nid = &$args[2]['new_db_server'];
     $target_platform_nid = &$args[2]['target_platform'];
 
-    // Ensure the new URL is valid.
+    // Ensure the new URL matches the configured domain.
     $domain = variable_get('hosting_saas_master_domain', 'localhost');
     if (!hosting_saas_url_matches_domain($new_uri, $domain)) {
-      // The URL doesn't fit the configured domain.
       $cloned_node_nid = NULL;
       watchdog('hosting_saas', "Cannot populate site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
         '%url' => $new_uri,
         '%domain' => $domain,
+      ), WATCHDOG_ERROR);
+      return;
+    }
+
+    // Ensure that the new URL is otherwise legal.
+    if (!hosting_domain_allowed($new_uri)) {
+      $cloned_node_nid = NULL;
+      watchdog('hosting_saas', "The new site URL %url is not allowed. It is likely already being used.", array(
+        '%url' => $new_uri,
       ), WATCHDOG_ERROR);
       return;
     }
@@ -280,11 +288,6 @@ function hosting_saas_clone_site_from_template($url, &$error_message = '') {
   }
 
   $model_site_nid = variable_get('hosting_saas_template_site_nid', NULL);
-
-  if (!hosting_domain_allowed($url)) {
-    $error_message = "This domain is not allowed. It is likely already being used.";
-    return FALSE;
-  }
 
   $args = array(
     'new_uri' => $url,
