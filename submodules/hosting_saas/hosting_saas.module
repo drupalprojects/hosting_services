@@ -36,7 +36,7 @@ function hosting_saas_menu() {
 }
 
 /**
- * Configuration form for hosting_saas
+ * SaaS configuration form.
  */
 function hosting_saas_settings() {
   $form['hosting_saas_master_domain'] = array(
@@ -78,8 +78,40 @@ function hosting_saas_settings() {
   return system_settings_form($form);
 }
 
+/**
+ * Validation for SaaS configuration form.
+ */
 function hosting_saas_settings_validate($form, &$form_state) {
-  // TODO validate nids
+
+  // Ensure that the site clone ID is actually a site.
+  if (!empty($form_state['values']['hosting_saas_template_site_nid'])) {
+    $node = node_load($form_state['values']['hosting_saas_template_site_nid']);
+    if ((!is_object($node)) || ($node->type != 'site')) {
+      form_set_error('hosting_saas_template_site_nid', t('Must be a valid site.'));
+    }
+  }
+
+  // Ensure that the DB server ID is actually a server.
+  if (!empty($form_state['values']['hosting_saas_db_server'])) {
+    $node = node_load($form_state['values']['hosting_saas_db_server']);
+    if ((!is_object($node)) || ($node->type != 'server')) {
+      form_set_error('hosting_saas_db_server', t('Must be a valid database server.'));
+    }
+  }
+
+  // Ensure that the target platform ID is actually a platform.
+  if (!empty($form_state['values']['hosting_saas_target_platform'])) {
+    $node = node_load($form_state['values']['hosting_saas_target_platform']);
+    if ((!is_object($node)) || ($node->type != 'platform')) {
+      form_set_error('hosting_saas_target_platform', t('Must be a valid platform.'));
+    }
+  }
+
+  // Ensure that the maximum number of sites is a non-negative integer.
+  $number = $form_state['values']['hosting_saas_max_capacity'];
+  if ((!ctype_digit($number)) || ($number < 0)) {
+    form_set_error('hosting_saas_max_capacity', t('Must be a non-negative number.'));
+  }
 }
 
 /**
