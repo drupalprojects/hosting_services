@@ -54,10 +54,11 @@ function hosting_saas_settings() {
   );
 
   $form['hosting_saas_db_server'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Database server node ID'),
-    '#description' => t('The node ID of the database server to use. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
-    '#default_value' => variable_get('hosting_saas_db_server', ''),
+    '#type' => 'select',
+    '#title' => t('Database server'),
+    '#description' => t('The database server to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#options' => hosting_get_servers('db'),
+    '#default_value' => variable_get('hosting_saas_db_server'),
   );
 
   $form['hosting_saas_target_platform'] = array(
