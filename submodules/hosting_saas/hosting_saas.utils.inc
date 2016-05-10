@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * @file
+ * Include file for additional SaaS configuration forms and processing.
+ *
+ * Forms and processing for everything outside of the basic settings (the
+ * settings landing page) goes into this file.
+ */
+
+/**
  * Configuration form for SaaS client-site handovers.
  */
 function hosting_saas_settings_clients($form, &$form_state) {
