@@ -242,8 +242,6 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
 // hook_node_insert
 function hosting_saas_node_insert($node) {
   $bridged_values = variable_get('hosting_saas_utils_bridged_values', array());
-  ddl('bridged_values');
-  ddl($bridged_values);
 
   if ($node->type == 'site' && !empty($bridged_values[$node->title])) {
     hosting_variables_set_site_variables($node->nid, $bridged_values[$node->title]);
