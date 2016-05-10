@@ -414,18 +414,13 @@ function hosting_saas_post_hosting_verify_task($task, $data) {
   // TODO: Option to unset the settings configuration post-verify
   // (so the user can change them).
 
-  drush_log(t('[hosting_saas] TEST'));
-
   $site = node_load($task->rid);
 
   if (!empty($site)) {
     $target = $site->hosting_name;
     $todo = variable_get('hosting_saas_todo', array());
 
-    drush_log(t('[hosting_saas] TEST2'));
-
     if (!empty($todo[$site->hosting_name])) {
-      drush_log(t('[hosting_saas] TEST3'));
       $client_user = $todo[$site->hosting_name]['create_new_user'];
 
       if (!empty($client_user)) {
