@@ -48,8 +48,9 @@ function hosting_saas_settings() {
 
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
-    '#title' => t('Template site node ID'),
-    '#description' => t('The node ID of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#title' => t('Template site URL'),
+    '#description' => t('Enter the name of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
   );
 
@@ -83,11 +84,10 @@ function hosting_saas_settings() {
  */
 function hosting_saas_settings_validate($form, &$form_state) {
 
-  // Ensure that the site clone ID is actually a site.
+  // Ensure that a site with the provided site name exists.
   if (!empty($form_state['values']['hosting_saas_template_site_nid'])) {
-    $node = node_load($form_state['values']['hosting_saas_template_site_nid']);
-    if ((!is_object($node)) || ($node->type != 'site')) {
-      form_set_error('hosting_saas_template_site_nid', t('Must be a valid site.'));
+    if (!hosting_get_site_by_url($form_state['values']['hosting_saas_template_site_nid'], FALSE)) {
+      form_set_error('hosting_saas_template_site_nid', t('Must be a valid site name.'));
     }
   }
 
@@ -140,7 +140,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     }
 
     // Get references to all of the alterable or otherwise useful arguments.
-    $cloned_node_nid = &$args[0];
+    $template_site = &$args[0];
     $new_uri = &$args[2]['new_uri'];
     $db_server_nid = &$args[2]['new_db_server'];
     $target_platform_nid = &$args[2]['target_platform'];
@@ -148,7 +148,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     // Ensure the new URL matches the configured domain.
     $domain = variable_get('hosting_saas_master_domain', 'localhost');
     if (!empty($domain) && (!hosting_saas_url_matches_domain($new_uri, $domain))) {
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "Cannot populate site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
         '%url' => $new_uri,
         '%domain' => $domain,
@@ -158,7 +158,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
 
     // Ensure that the new URL is otherwise legal.
     if (!hosting_domain_allowed($new_uri)) {
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "The new site URL %url is not allowed. It is likely already being used.", array(
         '%url' => $new_uri,
       ), WATCHDOG_ERROR);
@@ -166,12 +166,26 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     }
 
     // Set the ID of the site node to clone if it wasn't provided.
-    if (empty($cloned_node_nid)) {
-      if (empty($cloned_node_nid_saved = variable_get('hosting_saas_template_site_nid', ''))) {
-        watchdog('hosting_saas', "Cannot populate site clone task: ID of site to clone was not specified. Either save it in the settings, or provide the site node ID as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
+    if (empty($template_site)) {
+      if (empty($template_site_saved = variable_get('hosting_saas_template_site_nid', ''))) {
+        watchdog('hosting_saas', "Cannot populate site clone task: Template site name was not specified. Either save it in the settings, or provide it as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
         return;
       }
-      $cloned_node_nid = $cloned_node_nid_saved;
+      $template_site = $template_site_saved;
+    }
+
+    // Convert the template site name to a node ID as that's what's required for
+    // processing.
+    $node_id = hosting_get_site_by_url($template_site, FALSE);
+    if ($node_id !== FALSE) {
+      $template_site = $node_id;
+    }
+    else {
+      watchdog('hosting_saas', "Cannot populate site clone task: The provided template site name %template does not match an existing site.", array(
+        '%template' => $template_site,
+      ), WATCHDOG_ERROR);
+      $template_site = NULL;
+      return;
     }
 
     // Set the ID of the database server if it wasn't provided.
@@ -196,7 +210,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $capacity = variable_get('hosting_saas_max_capacity', '0');
     if (hosting_saas_at_full_capacity($target_platform_nid, $capacity) === TRUE) {
       // If it has, cause a failure and report it.
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "Cannot fulfill site clone task: The maximum number of sites have already been provisioned through this service.", array(), WATCHDOG_ALERT);
       return;
     }
