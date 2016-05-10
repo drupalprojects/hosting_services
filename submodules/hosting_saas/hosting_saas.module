@@ -91,10 +91,12 @@ function hosting_saas_settings() {
   );
 
   $form['hosting_saas_target_platform'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Target platform node ID'),
-    '#description' => t('The node ID of the platform on which to create the site. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
-    '#default_value' => variable_get('hosting_saas_target_platform', ''),
+    '#type' => 'select',
+    '#title' => t('Platform'),
+    '#description' => t('The platform to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    // Get a list of enabled platforms on any Web server.
+    '#options' => _hosting_get_platforms(0, TRUE),
+    '#default_value' => variable_get('hosting_saas_target_platform'),
   );
 
   $form['hosting_saas_max_capacity'] = array(
