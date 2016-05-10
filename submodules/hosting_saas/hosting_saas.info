@@ -7,5 +7,6 @@ dependencies[] = hosting_services
 dependencies[] = rest_server
 dependencies[] = services_api_key_auth
 dependencies[] = hosting_clone
+dependencies[] = hosting_variables
 
 files[] = hosting_saas.utils.inc
