@@ -1,11 +1,9 @@
 <?php
 
 /**
- * Configuration form for hosting_saas_utils
- *
- * @see hosting_saas_utils_settings_submit
+ * Configuration form for SaaS client-site handovers.
  */
-function hosting_saas_utils_settings($form, &$form_state) {
+function hosting_saas_settings_clients($form, &$form_state) {
   /* New user / uid1 */
   $user_options = array(1 => t('New user (recommended)'), 0 => t('Admin user (uid1, has all permissions)'));
 
@@ -48,21 +46,16 @@ function hosting_saas_utils_settings($form, &$form_state) {
     '#default_value' => variable_get('hosting_saas_utils_send_email', 1),
   );
 
-  _hosting_saas_utils_append_variables($form, $form_state);
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Submit',
-  );
-
-  // Can't use system_settings_form() because of the dynamic variables array.
-  return $form;
+  return system_settings_form($form);
 }
 
 /**
- * Helper function to add dynamically generated variable fields.
+ * Configuration form for SaaS Variables.
+ *
+ * @see hosting_saas_settings_variables_submit
  */
-function _hosting_saas_utils_append_variables(&$form, &$form_state) {
+function hosting_saas_settings_variables($form, &$form_state) {
+
   $form['hosting_saas_utils_variables_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Variables'),
@@ -110,6 +103,34 @@ function _hosting_saas_utils_append_variables(&$form, &$form_state) {
       'wrapper' => 'hosting-saas-utils-fieldset-wrapper',
     ),
   );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+
+  // Can't use system_settings_form() because of the dynamic variables array.
+  return $form;
+}
+
+/**
+ * Submission handler for the SaaS Variables configuration form.
+ *
+ * @see hosting_saas_settings_variables()
+ */
+function hosting_saas_settings_variables_submit(&$form, &$form_state) {
+  $variables = array();
+  foreach ($form_state['hosting_saas_utils_variables'] as $index => $val) {
+    // index is just the number of the child
+    $key = $form_state['values']['hosting_saas_utils_variable_key_' . $index];
+    $name = $form_state['values']['hosting_saas_utils_variable_name_' . $index];
+
+    if (!empty($key) && !empty($name)) {
+      $variables[$index] = array('key' => $key, 'name' => $name);
+    }
+  }
+
+  variable_set('hosting_saas_utils_variables', $variables);
 }
 
 /**
@@ -139,34 +160,6 @@ function _hosting_saas_utils_append_variable_fieldset(&$form, $index, $variable_
     '#default_value' => $variable_name,
     '#required' => FALSE,
   );
-}
-
-function hosting_saas_utils_settings_submit(&$form, &$form_state) {
-  $variables = array();
-  foreach ($form_state['hosting_saas_utils_variables'] as $index => $val) {
-    // index is just the number of the child
-    $key = $form_state['values']['hosting_saas_utils_variable_key_' . $index];
-    $name = $form_state['values']['hosting_saas_utils_variable_name_' . $index];
-
-    if (!empty($key) && !empty($name)) {
-      $variables[$index] = array('key' => $key, 'name' => $name);
-    }
-  }
-
-  variable_set('hosting_saas_utils_variables', $variables);
-
-  $settings_to_save = array(
-    'create_new_user',
-    'user_email',
-    'user_name',
-    'user_role',
-    'send_email',
-  );
-
-  foreach ($settings_to_save as $setting) {
-    $variable_name = 'hosting_saas_utils_' . $setting;
-    variable_set($variable_name, $form_state['values'][$variable_name]);
-  }
 }
 
 /**
