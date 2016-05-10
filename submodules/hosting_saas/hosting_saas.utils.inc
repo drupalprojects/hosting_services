@@ -12,44 +12,45 @@
  * Configuration form for SaaS client-site handovers.
  */
 function hosting_saas_settings_clients($form, &$form_state) {
-  /* New user / uid1 */
-  $user_options = array(1 => t('New user (recommended)'), 0 => t('Admin user (uid1, has all permissions)'));
 
   $form['hosting_saas_utils_create_new_user'] = array(
     '#type' => 'radios',
-    '#title' => t('Client user'),
+    '#title' => t('Initial user of newly-created sites'),
     '#default_value' => variable_get('hosting_saas_utils_create_new_user', 1),
-    '#options' => $user_options,
-    '#description' => t('The user to use on the new site.'),
+    '#options' => array(
+      1 => t('New user (recommended)'),
+      0 => t('Admin user (user ID 1, has all permissions)'),
+    ),
+    '#description' => t('The first client user to set up on the new site.'),
   );
 
   $form['hosting_saas_utils_user_email'] = array(
     '#type' => 'textfield',
-    '#title' => t('Client user email variable'),
-    '#description' => t("Enter the variable name that will contain the client user's email. Leave empty to not create or edit a user."),
+    '#title' => t('Initial client user e-mail variable'),
+    '#description' => t("Enter the variable name that will contain the initial client user's e-mail address. Leave empty to not create or edit a user."),
     '#default_value' => variable_get('hosting_saas_utils_user_email', ''),
     '#required' => FALSE,
   );
 
   $form['hosting_saas_utils_user_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Client user name variable'),
-    '#description' => t("Enter the variable name that will contain the client user's name. Will default to the email variable's value."),
+    '#title' => t('Initial client user name variable'),
+    '#description' => t("Enter the variable name that will contain the initial client user's name. Will default to the e-mail variable's value."),
     '#default_value' => variable_get('hosting_saas_utils_user_name', ''),
     '#required' => FALSE,
   );
 
   $form['hosting_saas_utils_user_role'] = array(
     '#type' => 'textfield',
-    '#title' => t('Client user role to assign'),
-    '#description' => t("Enter the name of the role to assign to the client user. Leave empty for none."),
+    '#title' => t('Initial client user role'),
+    '#description' => t("Enter the name of the role to assign to the initial client user. Leave empty for none."),
     '#default_value' => variable_get('hosting_saas_utils_user_role', NULL),
     '#required' => FALSE,
   );
 
   $form['hosting_saas_utils_send_email'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Send client user a registration email.'),
+    '#title' => t('Send initial client user a registration e-mail'),
     '#description' => t('This will use the default user registration message. You can set the message in your template site or enter it in the Variables tab of the site node.'),
     '#default_value' => variable_get('hosting_saas_utils_send_email', 1),
   );
