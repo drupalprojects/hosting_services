@@ -5,9 +5,6 @@
  * This is the main module file for Aegir SaaS.
  *
  * It provides Drupal hooks and functions for the module.
- *
- * @todo Convert platform handling to distribution handling once
- * https://www.drupal.org/node/2704799 gets implemented.
  */
 
 /**
@@ -19,8 +16,6 @@ const HOSTING_SAAS_ROLE = "aegir web services";
  * Define the user created by the module.
  */
 const HOSTING_SAAS_USER = "Aegir SaaS";
-
-
 
 /**
  * Implementation of hook_menu().
@@ -251,14 +246,17 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
   }
 }
 
-// hook_node_insert
+/**
+ * Implements hook_node_insert().
+ */
 function hosting_saas_node_insert($node) {
   $bridged_values = variable_get('hosting_saas_utils_bridged_values', array());
 
+  // Save the newly cloned site's variables to the DB.
   if ($node->type == 'site' && !empty($bridged_values[$node->title])) {
     hosting_variables_set_site_variables($node->nid, $bridged_values[$node->title]);
 
-    // This variable is meant to be temporary
+    // This variable is meant to be temporary.
     unset($bridged_values[$node->title]);
     variable_set('hosting_saas_utils_bridged_values', $bridged_values);
   }
