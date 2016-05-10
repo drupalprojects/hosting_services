@@ -20,18 +20,36 @@ const HOSTING_SAAS_ROLE = "aegir web services";
  */
 const HOSTING_SAAS_USER = "Aegir SaaS";
 
+
+
 /**
  * Implementation of hook_menu().
  */
 function hosting_saas_menu() {
   $items['admin/hosting/saas'] = array(
-    'title' => 'SaaS',
+    'title' => 'SaaS settings',
     'description' => 'Configure software-as-a-service settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_saas_settings'),
     'access arguments' => array('administer modules'),
     'type' => MENU_LOCAL_TASK,
   );
+
+  $items['admin/hosting/saas/settings'] = array(
+    'title' => 'SaaS',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/hosting/saas/saas_utils'] = array(
+    'title' => 'SaaS utilities',
+    'description' => 'Configure software-as-a-service utilities',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hosting_saas_utils_settings'),
+    'access arguments' => array('administer sites'),
+    'file' => 'hosting_saas.utils.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
   return $items;
 }
 
@@ -48,8 +66,9 @@ function hosting_saas_settings() {
 
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
-    '#title' => t('Template site node ID'),
-    '#description' => t('The node ID of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#title' => t('Template site URL'),
+    '#description' => t('Enter the name of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
   );
 
@@ -83,11 +102,10 @@ function hosting_saas_settings() {
  */
 function hosting_saas_settings_validate($form, &$form_state) {
 
-  // Ensure that the site clone ID is actually a site.
+  // Ensure that a site with the provided site name exists.
   if (!empty($form_state['values']['hosting_saas_template_site_nid'])) {
-    $node = node_load($form_state['values']['hosting_saas_template_site_nid']);
-    if ((!is_object($node)) || ($node->type != 'site')) {
-      form_set_error('hosting_saas_template_site_nid', t('Must be a valid site.'));
+    if (!hosting_get_site_by_url($form_state['values']['hosting_saas_template_site_nid'], FALSE)) {
+      form_set_error('hosting_saas_template_site_nid', t('Must be a valid site name.'));
     }
   }
 
@@ -120,10 +138,14 @@ function hosting_saas_settings_validate($form, &$form_state) {
  * Add missing configuration to site clone requests.
  */
 function hosting_saas_services_request_preprocess_alter($controller, &$args, $options) {
+  module_load_include('utils.inc', 'hosting_saas');
+
   if (($GLOBALS['user']->name == HOSTING_SAAS_USER) &&
       ($options['resource'] == 'task') &&
       ($controller['callback'] == 'hosting_services_save_task') &&
       ($args[1] == 'clone')) {
+
+    hosting_saas_utils_bridge_variables($args[2]);
 
     // Ensure that we have a URL for the new site.
     if (empty($args[2]['new_uri'])) {
@@ -140,7 +162,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     }
 
     // Get references to all of the alterable or otherwise useful arguments.
-    $cloned_node_nid = &$args[0];
+    $template_site = &$args[0];
     $new_uri = &$args[2]['new_uri'];
     $db_server_nid = &$args[2]['new_db_server'];
     $target_platform_nid = &$args[2]['target_platform'];
@@ -148,7 +170,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     // Ensure the new URL matches the configured domain.
     $domain = variable_get('hosting_saas_master_domain', 'localhost');
     if (!empty($domain) && (!hosting_saas_url_matches_domain($new_uri, $domain))) {
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "Cannot populate site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
         '%url' => $new_uri,
         '%domain' => $domain,
@@ -158,7 +180,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
 
     // Ensure that the new URL is otherwise legal.
     if (!hosting_domain_allowed($new_uri)) {
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "The new site URL %url is not allowed. It is likely already being used.", array(
         '%url' => $new_uri,
       ), WATCHDOG_ERROR);
@@ -166,12 +188,26 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     }
 
     // Set the ID of the site node to clone if it wasn't provided.
-    if (empty($cloned_node_nid)) {
-      if (empty($cloned_node_nid_saved = variable_get('hosting_saas_template_site_nid', ''))) {
-        watchdog('hosting_saas', "Cannot populate site clone task: ID of site to clone was not specified. Either save it in the settings, or provide the site node ID as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
+    if (empty($template_site)) {
+      if (empty($template_site_saved = variable_get('hosting_saas_template_site_nid', ''))) {
+        watchdog('hosting_saas', "Cannot populate site clone task: Template site name was not specified. Either save it in the settings, or provide it as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
         return;
       }
-      $cloned_node_nid = $cloned_node_nid_saved;
+      $template_site = $template_site_saved;
+    }
+
+    // Convert the template site name to a node ID as that's what's required for
+    // processing.
+    $node_id = hosting_get_site_by_url($template_site, FALSE);
+    if ($node_id !== FALSE) {
+      $template_site = $node_id;
+    }
+    else {
+      watchdog('hosting_saas', "Cannot populate site clone task: The provided template site name %template does not match an existing site.", array(
+        '%template' => $template_site,
+      ), WATCHDOG_ERROR);
+      $template_site = NULL;
+      return;
     }
 
     // Set the ID of the database server if it wasn't provided.
@@ -196,10 +232,25 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $capacity = variable_get('hosting_saas_max_capacity', '0');
     if (hosting_saas_at_full_capacity($target_platform_nid, $capacity) === TRUE) {
       // If it has, cause a failure and report it.
-      $cloned_node_nid = NULL;
+      $template_site = NULL;
       watchdog('hosting_saas', "Cannot fulfill site clone task: The maximum number of sites have already been provisioned through this service.", array(), WATCHDOG_ALERT);
       return;
     }
+  }
+}
+
+// hook_node_insert
+function hosting_saas_node_insert($node) {
+  $bridged_values = variable_get('hosting_saas_utils_bridged_values', array());
+  ddl('bridged_values');
+  ddl($bridged_values);
+
+  if ($node->type == 'site' && !empty($bridged_values[$node->title])) {
+    hosting_variables_set_site_variables($node->nid, $bridged_values[$node->title]);
+
+    // This variable is meant to be temporary
+    unset($bridged_values[$node->title]);
+    variable_set('hosting_saas_utils_bridged_values', $bridged_values);
   }
 }
 
@@ -346,4 +397,70 @@ function hosting_saas_default_services_endpoint() {
 
   // Return the collection.
   return $endpoints;
+}
+
+/**
+ * Implements hook_post_hosting_TASK_TYPE_task().
+ */
+function hosting_saas_post_hosting_verify_task($task, $data) {
+  // TODO: Option to unset the settings configuration post-verify
+  // (so the user can change them).
+
+  drush_log(t('[hosting_saas] TEST'));
+
+  $site = node_load($task->rid);
+
+  if (!empty($site)) {
+    $target = $site->hosting_name;
+    $todo = variable_get('hosting_saas_todo', array());
+
+    drush_log(t('[hosting_saas] TEST2'));
+
+    if (!empty($todo[$site->hosting_name])) {
+      drush_log(t('[hosting_saas] TEST3'));
+      $client_user = $todo[$site->hosting_name]['create_new_user'];
+
+      if (!empty($client_user)) {
+        drush_log(t('[hosting_saas] Creating new user: !name (!email).', array('!name' => $client_user['name'], '!email' => $client_user['email'])));
+
+        $results['user-create'] = provision_backend_invoke($target, 'user-create "' . $client_user['name'] . '" --mail="' . $client_user['email'] . '"');
+      }
+      else {
+        $client_user =  $todo[$site->hosting_name]['change_admin_user'];
+
+        if (!empty($client_user)) {
+          //drush_log(t('[hosting_saas] Assigning new values to admin user: !name (!email).', array('!name' => $client_user['name'], '!email' => $client_user['email'])));
+          // TODO
+        }
+      }
+
+      if (!empty($todo[$site->hosting_name]['set_user_role'])) {
+        drush_log(t('[hosting_saas] Assigning role: !role', array('!role' => $todo[$site->hosting_name]['set_user_role'])));
+        $results['user-assign-role'] = provision_backend_invoke($target, "user-add-role '" . $todo[$site->hosting_name]['set_user_role'] . "' --mail='" . $client_user['email'] . "'");
+      }
+
+      //   send_email
+      if ($todo[$site->hosting_name]['send_email']) {
+        // Clumsily parse uid and send notification until Drush implements --notify
+        $user_info = provision_backend_invoke($target, 'user-information --full "' . $client_user['email'] . '"');
+
+        if (preg_match ('/User ID.* ([0-9]+)/', $user_info['output'], $matches)) {
+          $new_user_uid = $matches[1];
+        }
+        else {
+          drush_set_error(t('[hosting_saas_utils] Could not parse user ID of new user! User creation failed?'));
+        }
+
+        drush_log('[hosting_saas_utils] Parsed uid of new user of new site: ' . $new_user_uid);
+
+        $message = "status_activated";
+        $result ['notify'] = provision_backend_invoke($target, "eval  '_user_mail_notify(\"".$message."\", user_load($new_user_uid));'");
+
+        drush_log(t("[hosting_saas_utils] Sent registration email to !name",  array('!name' => $client_user['name'])));
+      }
+
+      unset($todo[$site->hosting_name]);
+      variable_set('hosting_saas_utils_todo', $todo);
+    }
+  }
 }
