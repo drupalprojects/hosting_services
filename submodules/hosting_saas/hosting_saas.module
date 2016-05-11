@@ -33,16 +33,18 @@ function hosting_saas_menu() {
   $items['admin/hosting/saas/settings'] = array(
     'title' => 'Basic settings',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
   );
 
   $items['admin/hosting/saas/clients'] = array(
-    'title' => 'Client handovers',
-    'description' => 'Configure how site control is passed to clients',
+    'title' => 'Site handovers',
+    'description' => 'Configure how initial site control is passed to clients',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('hosting_saas_settings_clients'),
     'access arguments' => array('administer sites'),
     'file' => 'hosting_saas.utils.inc',
     'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
   );
 
   $items['admin/hosting/saas/variables'] = array(
@@ -53,6 +55,7 @@ function hosting_saas_menu() {
     'access arguments' => array('administer sites'),
     'file' => 'hosting_saas.utils.inc',
     'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
   );
 
   return $items;
