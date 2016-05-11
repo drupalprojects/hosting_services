@@ -15,7 +15,7 @@ function hosting_saas_settings_clients($form, &$form_state) {
 
   $form['hosting_saas_utils_create_new_user'] = array(
     '#type' => 'radios',
-    '#title' => t('Initial user of newly-created sites'),
+    '#title' => t('Initial client user of newly-created sites'),
     '#default_value' => variable_get('hosting_saas_utils_create_new_user', 1),
     '#options' => array(
       1 => t('New user (recommended)'),
