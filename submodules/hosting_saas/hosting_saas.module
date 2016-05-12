@@ -158,6 +158,12 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $task_site = &$args[0];
     $task_type = $args[1];
 
+    // Log the remote request.
+    watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on site "%task_site".', array(
+      '%task_type' => $task_type,
+      '%task_site' => $task_site,
+    ));
+
     // Convert the task site argument, a virtual hostname / URL, into the node
     // ID of a site. This is what's required for processing.
     $task_site = hosting_get_site_by_url($task_site, FALSE);
