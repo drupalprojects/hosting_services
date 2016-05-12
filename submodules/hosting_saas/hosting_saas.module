@@ -389,7 +389,7 @@ function hosting_saas_default_services_endpoint() {
       // generate a stable one that can be used for legitimate access
       // consistently, an administrator must manually save the authentication
       // form to override these default settings.
-      'api_key' => services_api_key_auth_generate_key(),
+      'api_key' => drupal_random_key(16),
       'user' => 'Aegir SaaS',
     ),
   );
