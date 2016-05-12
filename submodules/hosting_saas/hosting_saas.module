@@ -165,8 +165,12 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     ));
 
     // Convert the task site argument, a virtual hostname / URL, into the node
-    // ID of a site. This is what's required for processing.
-    $task_site = hosting_get_site_by_url($task_site, FALSE);
+    // ID of a site. This is what's required for processing. It can be missing
+    // from clone tasks as this value can be taken from the settings.
+    if ((!$task_site = hosting_get_site_by_url($task_site, FALSE)) && ($task_type != 'clone')) {
+      watchdog('hosting_saas', "Cannot populate task: Site name was not specified, or does not match an existing site. It must be provided in the POST form data as 'nid'.", array(), WATCHDOG_ERROR);
+      return;
+    }
 
     if ($task_type == 'clone') {
       // Include functionality specifically for clone tasks.
