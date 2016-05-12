@@ -18,8 +18,8 @@ function hosting_saas_settings_clients($form, &$form_state) {
     '#title' => t('Initial client user of newly-created sites'),
     '#default_value' => variable_get('hosting_saas_utils_create_new_user', 1),
     '#options' => array(
-      1 => t('New user (recommended)'),
-      0 => t('Admin user (user ID 1, has all permissions)'),
+      1 => t('New user (Recommended)'),
+      0 => t('Default "admin" user (Security warning: Always has all permissions and full site control)'),
     ),
     '#description' => t('The first client user to set up on the new site.'),
   );
