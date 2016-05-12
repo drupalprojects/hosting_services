@@ -65,17 +65,21 @@ function hosting_saas_menu() {
  * SaaS configuration form.
  */
 function hosting_saas_settings() {
+  $form['intro'] = array(
+    '#markup' => '<p>All of these settings affect the handling of remote requests to create site clone tasks. For the Services endpoint configuration, see <a href="/admin/structure/services">the Services configuration</a>.</p>'
+  );
+
   $form['hosting_saas_master_domain'] = array(
     '#type' => 'textfield',
     '#title' => t('Master domain name'),
-    '#description' => t('The master domain for your SaaS sites. Accepted URLs will be <em>*.thisfield</em>. If none is configured, all URLs will be accepted.'),
+    '#description' => t('The master domain for your SaaS sites. Accepted URLs will be <em>*.thisfield</em>. If none is configured, all new site name URLs will be accepted.'),
     '#default_value' => variable_get('hosting_saas_master_domain', 'localhost'),
   );
 
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
     '#title' => t('Template site URL'),
-    '#description' => t('Enter the name of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#description' => t('Enter the name/URL of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
     '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
   );
