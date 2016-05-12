@@ -223,7 +223,7 @@ function hosting_saas_inject_clone_task_settings(&$template_site, $new_site, &$d
   // Ensure that the new URL is otherwise legal.
   if (!hosting_domain_allowed($new_site)) {
     $template_site = NULL;
-    watchdog('hosting_saas', "The new site URL %url is not allowed. It is likely already being used.", array(
+    watchdog('hosting_saas', 'The new site URL "%url" is not allowed. It is likely already being used.', array(
       '%url' => $new_site,
     ), WATCHDOG_ERROR);
     return;
@@ -232,11 +232,11 @@ function hosting_saas_inject_clone_task_settings(&$template_site, $new_site, &$d
   // Set the ID of the site node to clone if it wasn't provided.
   if (empty($template_site)) {
     if (empty($template_site_saved = variable_get('hosting_saas_template_site_nid', ''))) {
-      watchdog('hosting_saas', "Cannot populate site clone task: Template site name was not specified. Either save it in the settings, or provide it as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
+      watchdog('hosting_saas', "Cannot populate site clone task: Template site name was not specified, or does not match an existing site. Either save it in the settings, or provide it as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
       return;
     }
     if (!$template_site = hosting_get_site_by_url($template_site_saved, FALSE)) {
-      watchdog('hosting_saas', "Cannot populate site clone task: The provided template site name %template does not match an existing site.", array(
+      watchdog('hosting_saas', "Cannot populate site clone task: The saved template site name %template does not match an existing site.", array(
         '%template' => $template_site_saved,
       ), WATCHDOG_ERROR);
       return;
