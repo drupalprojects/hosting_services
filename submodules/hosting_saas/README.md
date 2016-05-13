@@ -1,103 +1,20 @@
 Aegir SaaS
 ==========
 
-This module sets up a fully functional endpoint (via the [Aegir Services API](https://www.drupal.org/project/hosting_services)) allowing for remote administration of sites, notably cloning existing sites.  It provides common parameters for cloning as configured in the module's settings.  Using the API's task resource, sites can also be disabled, enabled, deleted, and have any other task performed on them supported by your [Aegir](https://www.drupal.org/project/hostmaster) installation.
+This module allows a simplified workflow.
 
-## What this module does
+It creates a default Services endpoint at aegir/saas (http://example.com/aegir/saas).
 
-1. It creates the *aegir web services* role.
-2. It creates the *Aegir SaaS* user (placed in the above role).
-3. It adds necessary permissions for the user to issue remote commands (getting site information and running tasks).
-4. It configures the new *aegir/saas* [Services](https://www.drupal.org/project/services) endpoint (over at http://example.com/aegir/saas for example).
-5. It associates remote commands on the endpoint with the new user.
-6. It sets up [API-key-based authentication](https://www.drupal.org/project/services_api_key_auth) on the endpoint.
-7. It enables the necessary resources required.
+The endpoint uses API key authentication by default, but **it will NOT be usable** until you go to the form and press "Save" in the Services Authentication page for the ressource: http://example.com/admin/structure/services/list/hosting_saas/authentication
 
-The primary feature of this module is its ability to clone sites with your desired settings.
+This module creates an Aegir SaaS user and role that have the right permissions for the creation by default.
 
-The endpoint uses API-key authentication by default, but **it will NOT be usable** (the key will change randomly) until you save its configuration.  This is a security feature that prevents the endpoint from being active until you explicitly enable it.
+The task type to use is clone. You can specify the settings in the request or in the settings (Hosting -> Saas). If you have both, the request's parameters will override the form's settings.
 
-## Dependencies / required modules
-
-* [Services](https://www.drupal.org/project/services)
-* [Aegir Services](https://www.drupal.org/project/hosting_services)
-* [Services API Key Authentication](https://www.drupal.org/project/services_api_key_auth)
-* [Hosting Variables](https://www.drupal.org/project/hosting_variables)
-
-## Installation and set-up
-
-1. Become the Aegir user on your Aegir server.
-    * sudo -sHu aegir
-2. Download the necessary modules.
-    * drush @hm dl hosting_services services services_api_key_auth hosting_variables
-3. Enable the Aegir SaaS module.
-    * drush @hm en hosting_saas
-4. Save your new automatically generated API key.
-    * Surf to Administration » Structure » Services.
-    * Click on the *Edit Authentication* item in the Operations pull-down menu of *hosting_saas*.  This is most likely at the far right of the screen due to a [bug](https://www.drupal.org/node/2706709).
-    * Hit the *Save* button.
-5. Configure your settings for cloning sites.
-    * Surf to Administration » Hosting » SaaS.
-    * Enter/change the *Basic settings* form, and then save it.
-    * Enter/change the *Site handovers* form, and then save it.
-    * Enter/change the *Injected variables* form, and then save it.
-
-For clone tasks, some arguments do not need to be provided on the main settings form; they can be provided in remote requests.  Request parameters will override configured values in the settings.
-
-## Client usage
-
-### Example
-
-You can test your endpoint with [cURL](https://en.wikipedia.org/wiki/CURL) on the command line:
+You can test your endpoint with curl on the command line:
 
     curl --data "api-key=your-api-key&type=clone&options[new_uri]=mynewsite.com&nid=&options[testing]=test" http://example.com/aegir/saas/task
 
-As you can see, you need to specify the *nid* parameter for Services to accept the request, but it can be empty if you want it to be overriden with the default site *nid* in the SaaS settings. (*nid* is the site to clone, and is entered as the site's name, not the site's node ID.  This is easier than having your client application figure out the node ID for a particular site.)
+As you can see, you need to specify the nid parameter for Services to accept the request, but it can be empty if you want it to be overriden with the default site nid in the SaaS settings. (nid is the site to clone.)
 
-If there are errors, you should receive an empty XML response. Errors related to settings will appear in the Recent Logs report (if you have the Database Logging module enabled; it is not enabled by default on Aegir).
-
-### Service call details
-
-#### Using GET
-
-##### List all sites
-
-* http://aegir.example.com/aegir/saas/site.json?api-key=super-secret-random-key
-
-##### Get information on a particular site
-
-* http://aegir.example.com/aegir/saas/site/aegir.example.com.json?api-key=super-secret-random-key
-
-#### Using POST
-
-##### Create site Clone task
-
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
-* Form data:
-    * **nid**: *template.example.com* (optional if in settings)
-    * **type**: *clone*
-    * **options[new_uri]**: *client1.example.com*
-    * **options[new_db_server]**: 12 (DB server node ID, if not in settings)
-    * **options[target_platform]**: 24 (Platform node ID, if not in settings)
-    * **options[...]**: (arguments set in your *Injected variables* configuration)
-
-##### Create site Disable task
-
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
-* Form data:
-    * **nid**: *client1.example.com*
-    * **type**: disable
-
-##### Create site Enable task
-
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
-* Form data:
-    * **nid**: *client1.example.com*
-    * **type**: enable
-
-##### Create site Delete task
-
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
-* Form data:
-    * **nid**: *client1.example.com*
-    * **type**: delete
+If there are errors, you should receive an empty XML response. Errors related to settings will appear in the Recent Logs report (if you have the Database Logging module enabled, it is not enabled by default on Aegir).
