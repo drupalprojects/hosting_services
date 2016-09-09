@@ -43,7 +43,7 @@ function hosting_saas_settings_clients($form, &$form_state) {
   $form['hosting_saas_utils_user_role'] = array(
     '#type' => 'textfield',
     '#title' => t('Initial client user role'),
-    '#description' => t("Enter the name of the role to assign to the initial client user. Leave empty for none."),
+    '#description' => t('Enter the name or ID of the role to assign to the initial client user. This must be the ID on Drupal 8 sites until <a href="https://github.com/drush-ops/drush/issues/2337">user-add-role fails on Drupal 8 when role label specified</a> is fixed in your Drush installation. Leave empty for none.'),
     '#default_value' => variable_get('hosting_saas_utils_user_role', NULL),
     '#required' => FALSE,
   );
