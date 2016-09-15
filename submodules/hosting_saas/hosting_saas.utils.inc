@@ -29,6 +29,9 @@ function hosting_saas_settings_clients($form, &$form_state) {
     '#title' => t('Initial client user e-mail variable'),
     '#description' => t("Enter the variable name that will contain the initial client user's e-mail address. Leave empty to not create or edit a user."),
     '#default_value' => variable_get('hosting_saas_utils_user_email', ''),
+    '#attributes' => array(
+      'placeholder' => 'client_email',
+    ),
     '#required' => FALSE,
   );
 
@@ -37,6 +40,9 @@ function hosting_saas_settings_clients($form, &$form_state) {
     '#title' => t('Initial client user name variable'),
     '#description' => t("Enter the variable name that will contain the initial client user's name. Will default to the e-mail variable's value."),
     '#default_value' => variable_get('hosting_saas_utils_user_name', ''),
+    '#attributes' => array(
+      'placeholder' => 'client_name',
+    ),
     '#required' => FALSE,
   );
 
@@ -45,6 +51,9 @@ function hosting_saas_settings_clients($form, &$form_state) {
     '#title' => t('Initial client user role'),
     '#description' => t('Enter the name or ID of the role to assign to the initial client user. This must be the ID on Drupal 8 sites until <a href="https://github.com/drush-ops/drush/issues/2337">user-add-role fails on Drupal 8 when role label specified</a> is fixed in your Drush installation. Leave empty for none.'),
     '#default_value' => variable_get('hosting_saas_utils_user_role', NULL),
+    '#attributes' => array(
+      'placeholder' => 'Owner',
+    ),
     '#required' => FALSE,
   );
 

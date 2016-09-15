@@ -77,8 +77,10 @@ If there are errors, you should receive an empty XML response. Errors related to
     * **nid**: *template.example.com* (optional if in settings)
     * **type**: *clone*
     * **options[new_uri]**: *client1.example.com*
-    * **options[new_db_server]**: 12 (DB server node ID, if not in settings)
-    * **options[target_platform]**: 24 (Platform node ID, if not in settings)
+    * **options[new_db_server]**: *12* (DB server node ID, if not in settings)
+    * **options[target_platform]**: *24* (Platform node ID, if not in settings)
+    * **options[client_email]**: *jane.doe@example.com* (if set up in *Site handovers* configuration)
+    * **options[client_name]**: *jane.doe* (if set up in *Site handovers* configuration)
     * **options[...]**: (arguments set in your *Injected variables* configuration)
 
 ##### Create site Disable task
