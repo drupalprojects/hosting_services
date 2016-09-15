@@ -20,8 +20,12 @@ function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
     return FALSE;
   }
 
+  // Get the node ID if we were given an object.
+  if (is_object($nid) && !empty($nid->nid)) {
+    $nid = $nid->nid;
+  }
   // Bail if the node to act upon couldn't be loaded.
-  if (!$node = node_load($nid)) {
+  elseif (!$node = node_load($nid)) {
     watchdog('hosting_services', 'Cannot create task: Node "%nid" cannot be loaded. Either it never existed or was deleted.', array('%nid' => $nid), WATCHDOG_ERROR);
     return FALSE;
   }
