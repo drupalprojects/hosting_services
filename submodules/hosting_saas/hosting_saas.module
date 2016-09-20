@@ -175,9 +175,10 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
 
     if (is_a($generator, 'AegirSaasCreateSiteTaskGenerator')) {
       $generator->prepareForSiteCreation();
-      $site = $generator->getUpdatedSiteIdFromConfiguration();
-      $task_arguments = $generator->getUpdatedArgumentsFromConfiguration();
     }
+
+    $site = $generator->getUpdatedSiteId();
+    $task_arguments = $generator->getUpdatedArguments();
   }
 }
 

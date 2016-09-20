@@ -30,6 +30,14 @@ class AegirSaasSiteTaskGenerator {
     }
   }
 
+  public function getUpdatedSiteId() {
+    return $this->site;
+  }
+
+  public function getUpdatedArguments() {
+    return $this->arguments;
+  }
+
   protected function logErrorAndThrowException($message, $severity = WATCHDOG_ERROR) {
     watchdog('hosting_saas', $message, array(), $severity);
     throw new Exception($message);
