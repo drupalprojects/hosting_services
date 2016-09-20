@@ -86,7 +86,7 @@ function hosting_saas_settings_variables($form, &$form_state) {
 
   if (!isset($form_state['hosting_saas_utils_variables'])) {
     $variables = variable_get('hosting_saas_utils_variables', array());
-    foreach ($variables as $key => $values) {
+    foreach ($variables as $values) {
       $form_state['hosting_saas_utils_variables'][] = array('key' => $values['key'], 'name' => $values['name']);
     }
 
