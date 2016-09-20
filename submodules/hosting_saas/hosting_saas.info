@@ -10,3 +10,7 @@ dependencies[] = hosting_clone
 dependencies[] = hosting_variables
 
 files[] = hosting_saas.utils.inc
+files[] = classes/AegirSaasSiteTaskGenerator.php
+files[] = classes/AegirSaasCreateSiteTaskGenerator.php
+files[] = classes/AegirSaasCloneSiteTaskGenerator.php
+files[] = classes/AegirSaasInstallSiteTaskGenerator.php

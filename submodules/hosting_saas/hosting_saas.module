@@ -66,7 +66,7 @@ function hosting_saas_menu() {
  */
 function hosting_saas_settings() {
   $form['intro'] = array(
-    '#markup' => '<p>All of these settings affect the handling of remote requests to create site clone tasks. For the Services endpoint configuration, see <a href="/admin/structure/services">the Services configuration</a>.</p>'
+    '#markup' => '<p>All of these settings affect the handling of remote requests to create sites via Install and Clone tasks. For the Services endpoint configuration, see <a href="/admin/structure/services">the Services configuration</a>.</p>'
   );
 
   $form['hosting_saas_master_domain'] = array(
@@ -79,7 +79,7 @@ function hosting_saas_settings() {
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
     '#title' => t('Template site URL'),
-    '#description' => t('Enter the name/URL of the site to clone on a new task clone request. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#description' => t('Enter the name/URL of the site to create via Clone tasks. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
     '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
   );
@@ -87,7 +87,7 @@ function hosting_saas_settings() {
   $form['hosting_saas_db_server'] = array(
     '#type' => 'select',
     '#title' => t('Database server'),
-    '#description' => t('The database server to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#description' => t('The database server to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
     '#options' => hosting_get_servers('db'),
     '#default_value' => variable_get('hosting_saas_db_server'),
   );
@@ -95,7 +95,7 @@ function hosting_saas_settings() {
   $form['hosting_saas_target_platform'] = array(
     '#type' => 'select',
     '#title' => t('Platform'),
-    '#description' => t('The platform to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden. Can be ignored if using an install-based method instead of the clone-based one provided by this module.'),
+    '#description' => t('The platform to use for new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
     // Get a list of enabled platforms on any Web server.
     '#options' => _hosting_get_platforms(0, TRUE),
     '#default_value' => variable_get('hosting_saas_target_platform'),
@@ -149,7 +149,7 @@ function hosting_saas_settings_validate($form, &$form_state) {
 /**
  * Implements hook_services_request_preprocess_alter().
  *
- * Add missing configuration to site clone requests.
+ * Adds additional information to site creation requests.
  */
 function hosting_saas_services_request_preprocess_alter($controller, &$args, $options) {
 
@@ -158,124 +158,26 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       ($options['resource'] == 'task') &&
       ($controller['callback'] == 'hosting_services_save_task')) {
 
-    // Get the task site and the task type from the arguments.
-    $task_site = &$args[0];
+    $site = &$args[0];
     $task_type = $args[1];
+    $task_arguments = &$args[2];
 
-    // Log the remote request.
     watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on site "%task_site".', array(
       '%task_type' => $task_type,
-      '%task_site' => $task_site,
+      '%task_site' => $site,
     ));
 
-    // Convert the task site argument, a virtual hostname / URL, into the node
-    // ID of a site. This is what's required for processing. It can be missing
-    // from clone tasks as this value can be taken from the settings.
-    if ((!$task_site = hosting_get_site_by_url($task_site, FALSE)) && ($task_type != 'clone')) {
-      watchdog('hosting_saas', "Cannot populate task: Site name was not specified, or does not match an existing site. It must be provided in the POST form data as 'nid'.", array(), WATCHDOG_ERROR);
-      return;
+    $generators = AegirSaasSiteTaskGenerator::MAP;
+    $generator_class = isset($generators[$task_type]) ? $generators[$task_type] : 'AegirSaasSiteTaskGenerator';
+    $generator = new $generator_class($site, $task_type, $task_arguments);
+
+    $generator->setSiteIdAndVerify();
+
+    if (is_a($generator, 'AegirSaasCreateSiteTaskGenerator')) {
+      $generator->prepareForSiteCreation();
+      $site = $generator->getUpdatedSiteIdFromConfiguration();
+      $task_arguments = $generator->getUpdatedArgumentsFromConfiguration();
     }
-
-    if ($task_type == 'clone') {
-      // Include functionality specifically for clone tasks.
-      module_load_include('utils.inc', 'hosting_saas');
-
-      // Prepare variables for injection into the new site.
-      hosting_saas_utils_bridge_variables($args[2]);
-
-      // Ensure that we have a URL for the new site.
-      if (empty($args[2]['new_uri'])) {
-        watchdog('hosting_saas', "Cannot populate site clone task: URL of the new site was not specified. It must be provided in the POST form data as 'options[new_uri]'.", array(), WATCHDOG_ERROR);
-        return;
-      }
-
-      // Set empty arguments so that we may reference them.
-      if (empty($args[2]['new_db_server'])) {
-        $args[2]['new_db_server'] = '';
-      }
-      if (empty($args[2]['target_platform'])) {
-        $args[2]['target_platform'] = '';
-      }
-
-      // Inject any missing clone task arguments from the settings.
-      hosting_saas_inject_clone_task_settings($task_site, $args[2]['new_uri'], $args[2]['new_db_server'], $args[2]['target_platform']);
-    }
-  }
-}
-
-/**
- * Inject any clone settings that weren't provided in the request.
- *
- * @param string $template_site
- *   The URL of the existing site being cloned.
- * @param string $new_site
- *   The URL of the new site to be cloned.
- * @param string $db
- *   The database server on which to host the new site's database.
- * @param string $platform
- *   The platform on which to host the new site.
- */
-function hosting_saas_inject_clone_task_settings(&$template_site, $new_site, &$db, &$platform) {
-
-  // Ensure the new URL matches the configured domain.
-  $domain = variable_get('hosting_saas_master_domain', 'localhost');
-  if (!empty($domain) && (!hosting_saas_url_matches_domain($new_site, $domain))) {
-    $template_site = NULL;
-    watchdog('hosting_saas', "Cannot populate site clone task: The requested URL '%url' does not match the configured domain '%domain'.", array(
-      '%url' => $new_site,
-      '%domain' => $domain,
-    ), WATCHDOG_ERROR);
-    return;
-  }
-
-  // Ensure that the new URL is otherwise legal.
-  if (!hosting_domain_allowed($new_site)) {
-    $template_site = NULL;
-    watchdog('hosting_saas', 'The new site URL "%url" is not allowed. It is likely already being used.', array(
-      '%url' => $new_site,
-    ), WATCHDOG_ERROR);
-    return;
-  }
-
-  // Set the ID of the site node to clone if it wasn't provided.
-  if (empty($template_site)) {
-    if (empty($template_site_saved = variable_get('hosting_saas_template_site_nid', ''))) {
-      watchdog('hosting_saas', "Cannot populate site clone task: Template site name was not specified, or does not match an existing site. Either save it in the settings, or provide it as 'nid' in the POST form data.", array(), WATCHDOG_ERROR);
-      return;
-    }
-    if (!$template_site = hosting_get_site_by_url($template_site_saved, FALSE)) {
-      watchdog('hosting_saas', "Cannot populate site clone task: The saved template site name %template does not match an existing site.", array(
-        '%template' => $template_site_saved,
-      ), WATCHDOG_ERROR);
-      return;
-    }
-  }
-
-  // Set the ID of the database server if it wasn't provided.
-  if (empty($db)) {
-    if (empty($db_saved = variable_get('hosting_saas_db_server', ''))) {
-      watchdog('hosting_saas', "Cannot populate site clone task: Target DB server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data.", array(), WATCHDOG_ERROR);
-      return;
-    }
-    $db = $db_saved;
-  }
-
-  // Set the ID of the platform if it wasn't provided.
-  if (empty($platform)) {
-    if (empty($platform_saved = variable_get('hosting_saas_target_platform', ''))) {
-      watchdog('hosting_saas', "Cannot populate site clone task: Target platform ID not specified. Either save it in the settings, or provide the server node ID as options[target_platform] in the POST form data.", array(), WATCHDOG_ERROR);
-      return;
-    }
-    $platform = $platform_saved;
-  }
-
-  // Ensure maximum capacity hasn't been reached.
-  $capacity = variable_get('hosting_saas_max_capacity', '0');
-  if (hosting_saas_at_full_capacity($platform, $capacity) === TRUE) {
-    // If it has, cause a failure and report it.
-    $template_site = NULL;
-    watchdog('hosting_saas', "Cannot fulfill site clone task: The maximum number of sites have already been provisioned through this service.", array(), WATCHDOG_ALERT);
-    return;
   }
 }
 
@@ -293,65 +195,6 @@ function hosting_saas_node_insert($node) {
     unset($bridged_values[$node->title]);
     variable_set('hosting_saas_utils_bridged_values', $bridged_values);
   }
-}
-
-/**
- * Check to see if a given URL falls within a specific domain.
- *
- * @param $url
- *   The URL the check against the domain.
- * @param $domain
- *   The domain to compare with the URL.
- * @return
- *   TRUE if the URL is in the domain, FALSE otherwise.
- */
-function hosting_saas_url_matches_domain($url, $domain) {
-  // Prefix the URL with a dot.
-  $dot_domain = '.' . $domain;
-
-  // Get its length.
-  $length = strlen($domain) + 1;
-
-  // Compare it with the domain.
-  if (substr_compare($url, $dot_domain, -$length, $length) === 0) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
-}
-
-/**
- * Check to see if we're at the maximum number of sites allowed.
- *
- * @param $platform
- *   The platform whose capacity is to be checked.
- * @param $capacity
- *   The total number of sites allowed on the system.
- * @return
- *   TRUE if we're at capacity, FALSE otherwise.
- */
-function hosting_saas_at_full_capacity($platform, $capacity) {
-
-  // If there's no limit, we can never be at capacity.
-  if (intval($capacity) <= 0) {
-    return FALSE;
-  }
-
-  // Fetch the number of sites on the platform.
-  $count = hosting_site_count($platform);
-
-  // If the number of sites has reached the limit, report a problem.
-  if ($count >= $capacity) {
-    return TRUE;
-  }
-
-  // Otherwise, everything is fine. Leave the flag down with log entry.
-  watchdog('hosting_saas', 'Site count / capacity: %count / %capacity', array(
-    '%count' => $count,
-    '%capacity' => $capacity,
-  ));
-  return FALSE;
 }
 
 /**
