@@ -23,13 +23,13 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
     }
 
     if (!empty($site_variables)) {
-      $bridged_values[$this->arguments['new_uri']] = $site_variables;
+      $bridged_values[$this->newSiteName()] = $site_variables;
       variable_set('hosting_saas_utils_bridged_values', $bridged_values);
     }
   }
 
   protected function prepareClientUserInfo() {
-    $uri = $this->arguments['new_uri'];
+    $uri = $this->newSiteName();
     $todo = variable_get('hosting_saas_todo', array());
     $client_user_email_key = variable_get('hosting_saas_utils_user_email', '');
     $client_user_name_key = variable_get('hosting_saas_utils_user_name', '');
@@ -70,59 +70,35 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
   }
 
   protected function injectConfigurationSettingsNotProvidedByRequest() {
-    if (empty($this->arguments['new_uri'])) {
-      $this->logErrorAndThrowException("Cannot populate site clone task: URL of the new site was not specified. It must be provided in the POST form data as 'options[new_uri]'.");
+    if (empty($this->newSiteName())) {
+      $this->logErrorAndThrowException("Cannot populate site creation task: URL of the new site was not specified. It must be provided in the POST form data as 'options[new_uri]' (for Clone) or 'nid' (for Install).");
     }
-
-    // Set empty arguments so that we may reference them.
-    if (empty($this->arguments['new_db_server'])) {
-      $this->arguments['new_db_server'] = '';
-    }
-    if (empty($this->arguments['target_platform'])) {
-      $this->arguments['target_platform'] = '';
-    }
-
-    $template_site = &$this->site;
-    $new_site = $this->arguments['new_uri'];
-    $database = &$this->arguments['new_db_server'];
-    $platform = &$this->arguments['target_platform'];
 
     if (!$this->siteNameMatchesDomain()) {
       $this->logErrorAndThrowException(t("Cannot populate site creation task: The requested URL '%url' does not match the configured domain '%domain'.", array(
-        '%url' => $new_site,
+        '%url' => $this->newSiteName(),
         '%domain' => variable_get('hosting_saas_master_domain', 'localhost'),
       )));
     }
 
-    if (!hosting_domain_allowed($new_site)) {
+    if (!hosting_domain_allowed($this->newSiteName())) {
       $this->logErrorAndThrowException(t('The new site URL "%url" is not allowed. It is likely already being used.', array(
-        '%url' => $new_site,
+        '%url' => $this->newSiteName(),
       )));
     }
 
-    if (empty($template_site)) {
-      if (empty($template_site_configured = variable_get('hosting_saas_template_site_nid', ''))) {
-        $this->logErrorAndThrowException(t("Cannot populate site clone task: Template site name was not specified, or does not match an existing site. Either save it in the settings, or provide it as 'nid' in the POST form data."));
-      }
-      if (!$template_site = hosting_get_site_by_url($template_site_configured, FALSE)) {
-        $this->logErrorAndThrowException(t("Cannot populate site clone task: The saved template site name %template does not match an existing site.", array(
-          '%template' => $template_site_configured,
-        )));
-      }
-    }
-
-    if (empty($database)) {
+    if (empty($this->arguments['new_db_server'])) {
       if (empty($database_configured = variable_get('hosting_saas_db_server', ''))) {
         $this->logErrorAndThrowException(t("Cannot populate site creation task: Target DB server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data."));
       }
-      $database = $database_configured;
+      $this->arguments['new_db_server'] = $database_configured;
     }
 
-    if (empty($platform)) {
+    if (empty($this->arguments['target_platform'])) {
       if (empty($platform_configured = variable_get('hosting_saas_target_platform', ''))) {
         $this->logErrorAndThrowException(t("Cannot populate site creation task: Target platform ID not specified. Either save it in the settings, or provide the server node ID as options[target_platform] in the POST form data."));
       }
-      $platform = $platform_configured;
+      $this->arguments['target_platform'] = $platform_configured;
     }
 
     if ($this->maximumNumberOfSitesReached() === TRUE) {
@@ -131,8 +107,6 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
   }
 
   protected function siteNameMatchesDomain() {
-    $site_name = $this->arguments['new_uri'];
-
     if (empty($domain = variable_get('hosting_saas_master_domain', 'localhost'))) {
       return TRUE;
     }
@@ -140,7 +114,7 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
     $dot_domain = '.' . $domain;
     $domain_length_with_dot = strlen($domain) + 1;
 
-    if (substr_compare($site_name, $dot_domain, -$domain_length_with_dot, $domain_length_with_dot) === 0) {
+    if (substr_compare($this->newSiteName(), $dot_domain, -$domain_length_with_dot, $domain_length_with_dot) === 0) {
       return TRUE;
     }
     return FALSE;

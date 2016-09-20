@@ -34,4 +34,5 @@ class AegirSaasSiteTaskGenerator {
     watchdog('hosting_saas', $message, array(), $severity);
     throw new Exception($message);
   }
+
 }

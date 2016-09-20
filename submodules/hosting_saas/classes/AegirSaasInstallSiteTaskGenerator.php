@@ -15,4 +15,8 @@ class AegirSaasInstallSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator
     }
   }
 
+  protected function newSiteName() {
+    return $this->site;
+  }
+
 }
