@@ -3,37 +3,39 @@
 /**
  * Create a task.
  *
- * @param $nid
- *   The ID of the node to act upon.
+ * @param $target
+ *   The task target: A node ID, node object or a site name.
  * @param $type
  *   A string representing the task type to create.
  * @param $args
  *   An array with arguments specific to the type of task.
  * @return
- *   The fully loaded task, or FALSE if unable to create.
+ *   The fully loaded task or site (for new site installs).
+ *   FALSE if unable to create.
  */
-function hosting_services_save_task($nid = NULL, $type = NULL, $args = NULL) {
+function hosting_services_save_task($target = NULL, $type = NULL, $args = NULL) {
 
-  // Bail if we don't have a valid node ID.
-  if (!$nid) {
-    watchdog('hosting_services', 'Cannot create task: ID of node to act upon was not provided.', array(), WATCHDOG_ERROR);
+  if (!$target) {
+    watchdog('hosting_services', 'Cannot create task: target was not provided.', array(), WATCHDOG_ERROR);
     return FALSE;
+  }
+
+  if ($type == 'install') {
+    module_load_include('inc', 'hosting_services', 'hosting_services.site');
+    return hosting_services_save_site($target, $args);
   }
 
   // Get the node ID if we were given an object.
-  if (is_object($nid) && !empty($nid->nid)) {
-    $nid = $nid->nid;
+  if (is_object($target) && !empty($target->nid)) {
+    $target = $target->nid;
   }
   // Bail if the node to act upon couldn't be loaded.
-  elseif (!$node = node_load($nid)) {
-    watchdog('hosting_services', 'Cannot create task: Node "%nid" cannot be loaded. Either it never existed or was deleted.', array('%nid' => $nid), WATCHDOG_ERROR);
+  elseif (!$node = node_load($target)) {
+    watchdog('hosting_services', 'Cannot create task: Node "%nid" cannot be loaded. Either it never existed or was deleted.', array('%nid' => $target), WATCHDOG_ERROR);
     return FALSE;
   }
 
-  // Perform action on loaded node.
-  $task = hosting_add_task($nid, $type, $args);
-
-  // Return the resulting task.
+  $task = hosting_add_task($target, $type, $args);
   return $task;
 }
 
