@@ -5,6 +5,9 @@
  */
 class AegirSaasInstallSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator {
 
+  const ARGUMENT_PLATFORM = 'platform';
+  const ARGUMENT_DATABASE = 'db_server';
+
   /**
    * {@inheritdoc}
    */
@@ -15,7 +18,7 @@ class AegirSaasInstallSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator
     }
   }
 
-  protected function newSiteName() {
+  protected function getNewSiteName() {
     return $this->site;
   }
 

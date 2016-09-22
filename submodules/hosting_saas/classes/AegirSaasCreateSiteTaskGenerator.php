@@ -5,6 +5,9 @@
  */
 class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
 
+  const ARGUMENT_PLATFORM = 'platform';
+  const ARGUMENT_DATABASE = 'database';
+
   public function prepareForSiteCreation() {
     $this->saveVariablesForInjection();
     $this->prepareClientUserInfo();
@@ -23,13 +26,13 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
     }
 
     if (!empty($site_variables)) {
-      $bridged_values[$this->newSiteName()] = $site_variables;
+      $bridged_values[$this->getNewSiteName()] = $site_variables;
       variable_set('hosting_saas_utils_bridged_values', $bridged_values);
     }
   }
 
   protected function prepareClientUserInfo() {
-    $uri = $this->newSiteName();
+    $uri = $this->getNewSiteName();
     $todo = variable_get('hosting_saas_todo', array());
     $client_user_email_key = variable_get('hosting_saas_utils_user_email', '');
     $client_user_name_key = variable_get('hosting_saas_utils_user_name', '');
@@ -70,35 +73,35 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
   }
 
   protected function injectConfigurationSettingsNotProvidedByRequest() {
-    if (empty($this->newSiteName())) {
+    if (empty($this->getNewSiteName())) {
       $this->logErrorAndThrowException("Cannot populate site creation task: URL of the new site was not specified. It must be provided in the POST form data as 'options[new_uri]' (for Clone) or 'nid' (for Install).");
     }
 
     if (!$this->siteNameMatchesDomain()) {
       $this->logErrorAndThrowException(t("Cannot populate site creation task: The requested URL '%url' does not match the configured domain '%domain'.", array(
-        '%url' => $this->newSiteName(),
+        '%url' => $this->getNewSiteName(),
         '%domain' => variable_get('hosting_saas_master_domain', 'localhost'),
       )));
     }
 
-    if (!hosting_domain_allowed($this->newSiteName())) {
+    if (!hosting_domain_allowed($this->getNewSiteName())) {
       $this->logErrorAndThrowException(t('The new site URL "%url" is not allowed. It is likely already being used.', array(
-        '%url' => $this->newSiteName(),
+        '%url' => $this->getNewSiteName(),
       )));
     }
 
-    if (empty($this->arguments['new_db_server'])) {
+    if (empty($this->getTargetDatabase())) {
       if (empty($database_configured = variable_get('hosting_saas_db_server', ''))) {
-        $this->logErrorAndThrowException(t("Cannot populate site creation task: Target DB server ID not specified. Either save it in the settings, or provide the server node ID as options[new_db_server] in the POST form data."));
+        $this->logErrorAndThrowException(t("Cannot populate site creation task: Target DB server ID not specified. Either save it in the settings, or provide the server node ID as options[database] in the POST form data."));
       }
-      $this->arguments['new_db_server'] = $database_configured;
+      $this->setTargetDatabase($database_configured);
     }
 
-    if (empty($this->arguments['target_platform'])) {
+    if (empty($this->getTargetPlatform())) {
       if (empty($platform_configured = variable_get('hosting_saas_target_platform', ''))) {
-        $this->logErrorAndThrowException(t("Cannot populate site creation task: Target platform ID not specified. Either save it in the settings, or provide the server node ID as options[target_platform] in the POST form data."));
+        $this->logErrorAndThrowException(t("Cannot populate site creation task: Target platform ID not specified. Either save it in the settings, or provide the server node ID as options[platform] in the POST form data."));
       }
-      $this->arguments['target_platform'] = $platform_configured;
+      $this->setTargetPlatform($platform_configured);
     }
 
     if ($this->maximumNumberOfSitesReached() === TRUE) {
@@ -114,14 +117,14 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
     $dot_domain = '.' . $domain;
     $domain_length_with_dot = strlen($domain) + 1;
 
-    if (substr_compare($this->newSiteName(), $dot_domain, -$domain_length_with_dot, $domain_length_with_dot) === 0) {
+    if (substr_compare($this->getNewSiteName(), $dot_domain, -$domain_length_with_dot, $domain_length_with_dot) === 0) {
       return TRUE;
     }
     return FALSE;
   }
 
   protected function maximumNumberOfSitesReached() {
-    $platform = $this->arguments['target_platform'];
+    $platform = $this->getTargetPlatform();
     $capacity = variable_get('hosting_saas_max_capacity', '0');
 
     // If there's no limit, we can never be at capacity.
@@ -143,6 +146,34 @@ class AegirSaasCreateSiteTaskGenerator extends AegirSaasSiteTaskGenerator {
       '%capacity' => $capacity,
     ));
     return FALSE;
+  }
+
+  protected function getPlatformArgument($parent = FALSE) {
+    return $parent ? self::ARGUMENT_PLATFORM : static::ARGUMENT_PLATFORM;
+  }
+
+  protected function getDatabaseArgument($parent = FALSE) {
+    return $parent ? self::ARGUMENT_DATABASE : static::ARGUMENT_DATABASE;
+  }
+
+  protected function getTargetPlatform() {
+    return isset($this->arguments[$this->getPlatformArgument()]) ? $this->arguments[$this->getPlatformArgument()] : '';
+  }
+
+  protected function getTargetDatabase() {
+    return isset($this->arguments[$this->getDatabaseArgument()]) ? $this->arguments[$this->getDatabaseArgument()] : '';
+  }
+
+  protected function setTargetPlatform($platform) {
+    // Set both generic and specific arguments are they're used in different places.
+    $this->arguments[$this->getPlatformArgument()] = $platform;
+    $this->arguments[$this->getPlatformArgument(TRUE)] = $platform;
+  }
+
+  protected function setTargetDatabase($database) {
+    // Set both generic and specific arguments are they're used in different places.
+    $this->arguments[$this->getDatabaseArgument()] = $database;
+    $this->arguments[$this->getDatabaseArgument(TRUE)] = $database;
   }
 
 }

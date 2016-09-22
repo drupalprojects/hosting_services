@@ -5,6 +5,9 @@
  */
 class AegirSaasCloneSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator {
 
+  const ARGUMENT_PLATFORM = 'target_platform';
+  const ARGUMENT_DATABASE = 'new_db_server';
+
   /**
    * {@inheritdoc}
    *
@@ -16,7 +19,7 @@ class AegirSaasCloneSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator {
     $this->site = hosting_get_site_by_url($this->site, FALSE);
   }
 
-  protected function newSiteName() {
+  protected function getNewSiteName() {
     return $this->arguments['new_uri'];
   }
 
