@@ -46,7 +46,12 @@ function hosting_services_save_site($url, $data) {
 
   $site->status = 1;
   node_save($site);
-  return !empty($site->nid) ? $site : FALSE;
+
+  if (!empty($site->nid)) {
+    hosting_add_task($site->nid, 'verify');
+    return $site;
+  }
+  return FALSE;
 }
 
 /**
