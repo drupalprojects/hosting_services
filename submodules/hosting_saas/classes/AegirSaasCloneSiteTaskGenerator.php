@@ -28,7 +28,7 @@ class AegirSaasCloneSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator {
 
     if (empty($this->site)) {
       if (empty($template_site_configured = variable_get('hosting_saas_template_site_nid', ''))) {
-        $this->logErrorAndThrowException(t("Cannot populate site clone task: Template site name was not specified, or does not match an existing site. Either save it in the settings, or provide it as 'nid' in the POST form data."));
+        $this->logErrorAndThrowException(t("Cannot populate site clone task: Template site name was not specified. Either save it in the settings, or provide it as 'nid' in the POST form data."));
       }
       if (!$this->site = hosting_get_site_by_url($template_site_configured, FALSE)) {
         $this->logErrorAndThrowException(t("Cannot populate site clone task: The saved template site name %template does not match an existing site.", array(
