@@ -27,23 +27,31 @@ function hosting_services_save_site($url, $data) {
     if (!is_numeric($data['platform']) || !is_numeric($data['profile'])) {
       return FALSE;
     }
+    $site = new stdClass();
     $site->type = 'site';
     $site->title = $site->hosting_name = check_plain($url);
     $site->db_server = (is_numeric($data['db_server'])) ? $data['db_server'] : variable_get('hosting_default_db_server', 0);
-    $site->client = (is_numeric($data['client'])) ? $data['client'] : variable_get('hosting_default_client', 1);
+    $site->client = ((isset($data['client']) && is_numeric($data['client']))) ? $data['client'] : variable_get('hosting_default_client', 1);
     $site = (object) array_merge((array) $site, $data);
     $site->uid = $user->uid;
+    $site->site_language = 'en';
     // Provide ip addresses if none have been provided
     if (empty($site->ip_addresses)) {
       $site->ip_addresses = _hosting_services_default_ip();
     }
   }
 
-  node_validate($site);
+  $form_state = array();
+  node_validate($site, array(), $form_state);
 
   $site->status = 1;
   node_save($site);
-  return !empty($site->nid) ? $site : FALSE;
+
+  if (!empty($site->nid)) {
+    hosting_add_task($site->nid, 'verify');
+    return $site;
+  }
+  return FALSE;
 }
 
 /**

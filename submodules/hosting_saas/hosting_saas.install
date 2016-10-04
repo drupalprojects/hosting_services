@@ -75,6 +75,7 @@ function hosting_saas_uninstall() {
   variable_del('hosting_saas_max_capacity');
   variable_del('hosting_saas_target_platform');
   variable_del('hosting_saas_template_site_nid');
+  variable_del('hosting_saas_template_profile');
   variable_del('hosting_saas_todo');
   variable_del('hosting_saas_utils_bridged_values');
   variable_del('hosting_saas_utils_create_new_user');
