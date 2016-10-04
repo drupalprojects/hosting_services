@@ -78,10 +78,18 @@ function hosting_saas_settings() {
 
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
-    '#title' => t('Template site URL'),
-    '#description' => t('Enter the name/URL of the site to create via Clone tasks. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
+    '#title' => t('Clone tasks: Default template site URL'),
+    '#description' => t('Enter the name/URL of the site from which new sites are cloned. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
     '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
+  );
+
+  $form['hosting_saas_template_profile'] = array(
+    '#type' => 'select',
+    '#title' => t('Install tasks: Default installation profile'),
+    '#description' => t('Select the installation profile used for installing new sites. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
+    '#options' => hosting_get_profiles(),
+    '#default_value' => variable_get('hosting_saas_template_profile', ''),
   );
 
   $form['hosting_saas_db_server'] = array(
@@ -137,6 +145,13 @@ function hosting_saas_settings_validate($form, &$form_state) {
     if ((!is_object($node)) || ($node->type != 'platform')) {
       form_set_error('hosting_saas_target_platform', t('Must be a valid platform.'));
     }
+  }
+
+  // Ensure that the selected profile exists on the selected platform.
+  $profile_selected = $form_state['values']['hosting_saas_template_profile'];
+  $profiles_available = hosting_get_profiles($form_state['values']['hosting_saas_target_platform']);
+  if (!in_array($profile_selected, array_keys($profiles_available))) {
+    form_set_error('hosting_saas_template_profile', t('The profile is not available on the selected platform.'));
   }
 
   // Ensure that the maximum number of sites is a non-negative integer.
