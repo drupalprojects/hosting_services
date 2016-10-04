@@ -330,15 +330,15 @@ function hosting_saas_post_hosting_verify_task($task, $data) {
       $new_user_uid = $matches[1];
     }
     else {
-      drush_set_error(t('[hosting_saas_utils] Could not parse user ID of new user! User creation failed?'));
+      drush_set_error(t('[hosting_saas] Could not parse user ID of new user! User creation failed?'));
     }
 
-    drush_log('[hosting_saas_utils] Parsed uid of new user of new site: ' . $new_user_uid);
+    drush_log('[hosting_saas] Parsed uid of new user of new site: ' . $new_user_uid);
 
     $message = "status_activated";
     $results['notify'] = provision_backend_invoke($target, "eval  '_user_mail_notify(\"".$message."\", user_load($new_user_uid));'");
 
-    drush_log(t("[hosting_saas_utils] Sent registration email to !name",  array('!name' => $client_user['name'])));
+    drush_log(t("[hosting_saas] Sent registration email to !name",  array('!name' => $client_user['name'])));
   }
 
   unset($todo[$site->hosting_name]);
