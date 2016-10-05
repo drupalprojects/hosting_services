@@ -177,9 +177,10 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
     $task_type = $args[1];
     $task_arguments = &$args[2];
 
-    watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on site "%task_site".', array(
+    watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on site "%task_site". Arguments: %arguments', array(
       '%task_type' => $task_type,
       '%task_site' => $site,
+      '%arguments' => serialize($task_arguments),
     ));
 
     $generators = AegirSaasSiteTaskGenerator::MAP;
