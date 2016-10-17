@@ -78,7 +78,7 @@ function hosting_saas_settings() {
 
   $form['hosting_saas_template_site_nid'] = array(
     '#type' => 'textfield',
-    '#title' => t('Clone tasks: Default template site URL'),
+    '#title' => t('Clone tasks: Site to clone'),
     '#description' => t('Enter the name/URL of the site from which new sites are cloned. This can either be set here, or provided in the remote request. If provided in the request, the value here will be overridden.'),
     '#autocomplete_path' => 'hosting/sites/autocomplete',
     '#default_value' => variable_get('hosting_saas_template_site_nid', ''),
@@ -126,7 +126,7 @@ function hosting_saas_settings_validate($form, &$form_state) {
 
   // Ensure that a site with the provided site name exists.
   if (!empty($form_state['values']['hosting_saas_template_site_nid'])) {
-    if (!hosting_get_site_by_url($form_state['values']['hosting_saas_template_site_nid'], FALSE)) {
+    if (!$site_to_clone = hosting_get_site_by_url($form_state['values']['hosting_saas_template_site_nid'], FALSE)) {
       form_set_error('hosting_saas_template_site_nid', t('Must be a valid site name.'));
     }
   }
@@ -152,6 +152,12 @@ function hosting_saas_settings_validate($form, &$form_state) {
   $profiles_available = hosting_get_profiles($form_state['values']['hosting_saas_target_platform']);
   if (!in_array($profile_selected, array_keys($profiles_available))) {
     form_set_error('hosting_saas_template_profile', t('The profile is not available on the selected platform.'));
+  }
+
+  if (!empty($site_to_clone)) {
+    if (!in_array(node_load($site_to_clone)->profile, array_keys($profiles_available))) {
+      form_set_error('hosting_saas_target_platform', t('The chosen site to clone requires an installation profile not available on the selected platform. Please choose another site/profile combination.'));
+    }
   }
 
   // Ensure that the maximum number of sites is a non-negative integer.

@@ -38,6 +38,14 @@ class AegirSaasInstallSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator
       }
       $this->arguments['profile'] = $profile->nid;
     }
+
+    $profiles_available = hosting_get_profiles($this->getTargetPlatform());
+    if (!in_array($this->arguments['profile'], array_keys($profiles_available))) {
+      $this->logErrorAndThrowException(t("Cannot populate site Install task: The requested profile %profile is not available on the requested platform %platform.", array(
+        '%profile' => node_load($this->arguments['profile'])->title,
+        '%platform' => node_load($this->getTargetPlatform())->title,
+      )));
+    }
   }
 
 }

@@ -36,6 +36,16 @@ class AegirSaasCloneSiteTaskGenerator extends AegirSaasCreateSiteTaskGenerator {
         )));
       }
     }
+
+    $profiles_available = hosting_get_profiles($this->getTargetPlatform());
+    $site = node_load($this->site);
+    if (!in_array($site->profile, array_keys($profiles_available))) {
+      $this->logErrorAndThrowException(t("Cannot populate site Clone task: The requested platform %platform does not contain the profile %profile necessary for cloning site %site.", array(
+        '%platform' => node_load($this->getTargetPlatform())->title,
+        '%profile' => node_load($site->profile)->title,
+        '%site' => $site->title,
+      )));
+    }
   }
 
 }
