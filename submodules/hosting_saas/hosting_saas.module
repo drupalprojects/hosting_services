@@ -168,6 +168,29 @@ function hosting_saas_settings_validate($form, &$form_state) {
 }
 
 /**
+ * Implements hook_services_resources_alter().
+ *
+ * Change the first argument from "nid" to "target" as we accept site names.
+ * The node ID of the target site isn't required, and shouldn't be.  We're
+ * calling it "target" instead of "site" because we may support platforms etc.
+ * later.
+ */
+function hosting_saas_services_resources_alter(&$resources, &$endpoint) {
+  if ($endpoint->name != 'hosting_saas') {
+    return;
+  }
+
+  $target = &$resources['hosting_task']['operations']['create']['args'][0];
+
+  $target['name'] = 'target';
+  $target['type'] = 'string';
+  $target['optional'] = FALSE;
+  $target['description'] = t('The name or ID of the target entity on which to run the task');
+  $target['source'] = array('data' => 'target');
+  $target['default value'] = NULL;
+}
+
+/**
  * Implements hook_services_request_preprocess_alter().
  *
  * Adds additional information to site creation requests.
@@ -179,19 +202,23 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       ($options['resource'] == 'task') &&
       ($controller['callback'] == 'hosting_services_save_task')) {
 
-    $site = &$args[0];
+    $target = &$args[0];
     $task_type = $args[1];
     $task_arguments = &$args[2];
 
-    watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on site "%task_site". Arguments: %arguments', array(
+    watchdog('hosting_saas', 'Remote request received: Attempting to run "%task_type" task on target "%task_target". Arguments: %arguments', array(
       '%task_type' => $task_type,
-      '%task_site' => $site,
+      '%task_target' => $target,
       '%arguments' => serialize($task_arguments),
     ));
 
+    // We currently only support sites. If we add support for platforms etc.,
+    // we'll need to determine the target type to instantiate a generator for it.
+    // See https://www.drupal.org/node/2724403#comment-11201337 for details.
+
     $generators = AegirSaasSiteTaskGenerator::MAP;
     $generator_class = isset($generators[$task_type]) ? $generators[$task_type] : 'AegirSaasSiteTaskGenerator';
-    $generator = new $generator_class($site, $task_type, $task_arguments);
+    $generator = new $generator_class($target, $task_type, $task_arguments);
 
     $generator->setSiteIdAndVerify();
 
@@ -199,7 +226,7 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       $generator->prepareForSiteCreation();
     }
 
-    $site = $generator->getUpdatedSiteId();
+    $target = $generator->getUpdatedSiteId();
     $task_arguments = $generator->getUpdatedArguments();
   }
 }

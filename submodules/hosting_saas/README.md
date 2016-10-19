@@ -12,6 +12,7 @@ This module sets up a fully functional endpoint (via the [Aegir Services API](ht
 5. It associates remote commands on the endpoint with the new user.
 6. It sets up [API-key-based authentication](https://www.drupal.org/project/services_api_key_auth) on the endpoint.
 7. It enables the necessary resources required.
+8. It allows you to run tasks on sites with their site names; you don't need their node IDs.
 
 The primary feature of this module is its ability to create new sites with your desired settings.
 
@@ -50,9 +51,9 @@ For site creation tasks, some arguments do not need to be provided on the main s
 
 You can test your endpoint with [cURL](https://en.wikipedia.org/wiki/CURL) on the command line:
 
-    curl --data "api-key=your-api-key&type=clone&options[new_uri]=mynewsite.com&nid=&options[testing]=test" http://example.com/aegir/saas/task
+    curl --data "api-key=your-api-key&type=clone&options[new_uri]=mynewsite.com&target=&options[testing]=test" http://example.com/aegir/saas/task
 
-As you can see, you need to specify the *nid* parameter for Services to accept the request, but it can be empty if you want it to be overriden with the default site *nid* in the SaaS settings. (*nid* is the site to clone, and is entered as the site's name, not the site's node ID.  This is easier than having your client application figure out the node ID for a particular site.  If you find this confusing, then please help with [Better POST argument names: site_name and task_type](https://www.drupal.org/node/2724403)).
+As you can see, you need to specify the *target* parameter for Services to accept the request, but it can be empty if you want it to be overriden with the default site *target* in the SaaS settings. (*target* is the site to clone, and is entered as the site's name. We're calling it *target* instead of *site* because we may want to support platforms or other target types later.)
 
 If there are errors, you should receive an empty XML response. Errors related to settings will appear in the Recent Logs report (if you have the Database Logging module enabled; it is not enabled by default on Aegir).
 
@@ -74,7 +75,7 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 * http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
 * Form data:
-    * **nid**: *template.example.com* (optional if in settings)
+    * **target**: *template.example.com* (optional if in settings)
     * **type**: *clone*
     * **options[new_uri]**: *client1.example.com*
     * **options[database]**: *12* (DB server node ID, if not in settings)
@@ -87,7 +88,7 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 * http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
 * Form data:
-    * **nid**: *client1.example.com*
+    * **target**: *client1.example.com*
     * **type**: *install*
     * **options[profile]**: *standard* (installation profile short name / ID, if not in settings)
     * **options[database]**: *12* (DB server node ID, if not in settings)
@@ -100,19 +101,19 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 * http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
 * Form data:
-    * **nid**: *client1.example.com*
+    * **target**: *client1.example.com*
     * **type**: disable
 
 ##### Create site Enable task
 
 * http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
 * Form data:
-    * **nid**: *client1.example.com*
+    * **target**: *client1.example.com*
     * **type**: enable
 
 ##### Create site Delete task
 
 * http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
 * Form data:
-    * **nid**: *client1.example.com*
+    * **target**: *client1.example.com*
     * **type**: delete
