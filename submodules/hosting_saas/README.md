@@ -35,7 +35,7 @@ The endpoint uses API-key authentication by default, but **it will NOT be usable
     * drush @hm en hosting_saas
 4. Save your new automatically generated API key.
     * Surf to Administration » Structure » Services.
-    * Click on the *Edit Authentication* item in the Operations pull-down menu of *hosting_saas*.  This is most likely at the far right of the screen due to a [bug](https://www.drupal.org/node/2706709).
+    * Click on the *Edit Authentication* item in the Operations pull-down menu of *hosting_saas*.
     * Hit the *Save* button.
 5. Configure your settings for creating new sites.
     * Surf to Administration » Hosting » SaaS.
