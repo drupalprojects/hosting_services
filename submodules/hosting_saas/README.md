@@ -30,7 +30,7 @@ The endpoint uses API-key authentication by default, but **it will NOT be usable
 1. Become the Aegir user on your Aegir server.
     * sudo -sHu aegir
 2. Download the necessary modules.
-    * drush @hm dl hosting_services services services_api_key_auth hosting_variables
+    * drush @hm dl hosting_services services services_api_key_auth hosting_variables --destination=$(drush dd @hm:%site)/modules/contrib
 3. Enable the Aegir SaaS module.
     * drush @hm en hosting_saas
 4. Save your new automatically generated API key.
