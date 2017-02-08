@@ -323,6 +323,14 @@ function hosting_saas_default_services_endpoint() {
         ),
       ),
     ),
+    'hosting_variables' => array(
+      'alias' => 'variables',
+      'operations' => array(
+        'update' => array(
+          'enabled' => '1',
+        ),
+      ),
+    ),
   );
   $endpoint->debug = 0;
 
