@@ -117,3 +117,7 @@ If there are errors, you should receive an empty XML response. Errors related to
 * Form data:
     * **target**: *client1.example.com*
     * **type**: delete
+
+#### Manipulating Site Variables
+
+Besides being set initially in the module configuration via the *Injected variables* tab, Aegir-controlled site variables can be indexed, created, retrieved, updated and deleted (CRUD) remotely later.  See [that module's documentation](http://cgit.drupalcode.org/hosting_variables/tree/README.md) for information on working with this resource.
