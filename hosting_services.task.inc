@@ -22,7 +22,7 @@ function hosting_services_save_task($target = NULL, $type = NULL, $args = NULL) 
 
   if ($type == 'install') {
     module_load_include('inc', 'hosting_services', 'hosting_services.site');
-    return hosting_services_save_site($target, $args);
+    return hosting_services_create_site($target, $args);
   }
 
   // Get the node ID if we were given an object.

@@ -13,8 +13,21 @@ function hosting_services_list_sites() {
   return $sites;
 }
 
+
 /**
- * Create and update sites
+ * Create sites
+ */
+function hosting_services_create_site($url, $data) {
+  $site = hosting_services_save_site($url, $data);
+  if (!empty($site->nid)) {
+    hosting_add_task($site->nid, 'verify');
+    return $site;
+  }
+  return FALSE;
+}
+
+/**
+ * Update sites
  */
 function hosting_services_save_site($url, $data) {
   global $user;
@@ -47,11 +60,7 @@ function hosting_services_save_site($url, $data) {
   $site->status = 1;
   node_save($site);
 
-  if (!empty($site->nid)) {
-    hosting_add_task($site->nid, 'verify');
-    return $site;
-  }
-  return FALSE;
+  return $site;
 }
 
 /**
