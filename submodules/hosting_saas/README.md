@@ -59,21 +59,26 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 ### Service call details
 
+For each of these, the following should be set as a header parameter, but you can also pass it in the URL (not recommended as less secure).  See [Services API Key Authentication](https://www.drupal.org/project/services_api_key_auth) for more information.
+
+
+* `api-key=super-secret-random-key`
+
 #### Using GET
 
 ##### List all sites
 
-* http://aegir.example.com/aegir/saas/site.json?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/site.json
 
 ##### Get information on a particular site
 
-* http://aegir.example.com/aegir/saas/site/aegir.example.com.json?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/site/aegir.example.com.json
 
 #### Using POST
 
 ##### Create site Clone task
 
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/task
 * Form data:
     * **target**: *template.example.com* (optional if in settings)
     * **type**: *clone*
@@ -86,7 +91,7 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 ##### Create site Install task
 
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/task
 * Form data:
     * **target**: *client1.example.com*
     * **type**: *install*
@@ -99,21 +104,21 @@ If there are errors, you should receive an empty XML response. Errors related to
 
 ##### Create site Disable task
 
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/task
 * Form data:
     * **target**: *client1.example.com*
     * **type**: disable
 
 ##### Create site Enable task
 
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/task
 * Form data:
     * **target**: *client1.example.com*
     * **type**: enable
 
 ##### Create site Delete task
 
-* http://aegir.example.com/aegir/saas/task?api-key=super-secret-random-key
+* http://aegir.example.com/aegir/saas/task
 * Form data:
     * **target**: *client1.example.com*
     * **type**: delete
