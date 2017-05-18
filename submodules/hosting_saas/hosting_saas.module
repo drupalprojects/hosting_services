@@ -18,7 +18,7 @@ const HOSTING_SAAS_ROLE = "aegir web services";
 const HOSTING_SAAS_USER = "Aegir SaaS";
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function hosting_saas_menu() {
   $items['admin/hosting/saas'] = array(
@@ -66,7 +66,7 @@ function hosting_saas_menu() {
  */
 function hosting_saas_settings() {
   $form['intro'] = array(
-    '#markup' => '<p>All of these settings affect the handling of remote requests to create sites via Install and Clone tasks. For the Services endpoint configuration, see <a href="/admin/structure/services">the Services configuration</a>.</p>'
+    '#markup' => '<p>All of these settings affect the handling of remote requests to create sites via Install and Clone tasks. For the Services endpoint configuration, see <a href="/admin/structure/services">the Services configuration</a>.</p>',
   );
 
   $form['hosting_saas_master_domain'] = array(
@@ -114,6 +114,26 @@ function hosting_saas_settings() {
     '#title' => t('Maximum number of sites'),
     '#description' => t('The maximum number of SaaS sites allowed on the server. This will only count active sites. For an unlimited number of sites, leave this value at zero.'),
     '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
+  );
+
+  $form['hosting_saas_https_encryption'] = array(
+    '#type' => 'radios',
+    '#title' => t('HTTPS encryption'),
+    '#options' => hosting_https_status_options(),
+    '#description' => t('
+Enabling encryption will publish your sites on both HTTP and HTTPS ports,
+allowing you to redirect users to the more secure version for certain pages that
+require the additional security. Requiring encryption will automatically
+redirect all unencrypted traffic to your HTTPS sites. This functionality will
+take effect only if Aegir HTTPS is enabled, and the hosting Web server is
+using it.
+    ') . '<br/><strong>' . t("
+If the server is setup to generate HTTPS certificates using Let's Encrypt,
+ensure that there are existing public DNS entries for the sites (usually via a
+wildcard entry), otherwise the site installations will fail.
+    ") . '</strong>',
+    '#required' => TRUE,
+    '#default_value' => variable_get('hosting_saas_https_encryption', HOSTING_HTTPS_DISABLED),
   );
 
   return system_settings_form($form);
@@ -194,6 +214,10 @@ function hosting_saas_services_resources_alter(&$resources, &$endpoint) {
  * Implements hook_services_request_preprocess_alter().
  *
  * Adds additional information to site creation requests.
+ *
+ * @todo We currently only support sites. If we add support for platforms etc.,
+ *   we'll need to determine the target type to instantiate a generator for it.
+ *   See https://www.drupal.org/node/2724403#comment-11201337 for details.
  */
 function hosting_saas_services_request_preprocess_alter($controller, &$args, $options) {
 
@@ -211,10 +235,6 @@ function hosting_saas_services_request_preprocess_alter($controller, &$args, $op
       '%task_target' => $target,
       '%arguments' => serialize($task_arguments),
     ));
-
-    // We currently only support sites. If we add support for platforms etc.,
-    // we'll need to determine the target type to instantiate a generator for it.
-    // See https://www.drupal.org/node/2724403#comment-11201337 for details.
 
     $generators = AegirSaasSiteTaskGenerator::MAP;
     $generator_class = isset($generators[$task_type]) ? $generators[$task_type] : 'AegirSaasSiteTaskGenerator';
@@ -348,7 +368,7 @@ function hosting_saas_default_services_endpoint() {
  */
 function hosting_saas_post_hosting_verify_task($task, $data) {
   if (empty($site = node_load($task->rid))) {
-   return;
+    return;
   }
 
   $target = $site->hosting_name;
@@ -380,7 +400,7 @@ function hosting_saas_post_hosting_verify_task($task, $data) {
 
   // Send e-mail to new client user.
   if ($todo[$site->hosting_name]['send_email']) {
-    // Clumsily parse uid and send notification until Drush implements --notify
+    // Clumsily parse uid and send notification until Drush implements --notify.
     $user_info = provision_backend_invoke($target, 'user-information --full "' . $client_user['email'] . '"');
 
     if (preg_match ('/User ID.* ([0-9]+)/', $user_info['output'], $matches)) {
@@ -393,11 +413,30 @@ function hosting_saas_post_hosting_verify_task($task, $data) {
     drush_log('[hosting_saas] Parsed uid of new user of new site: ' . $new_user_uid);
 
     $message = "status_activated";
-    $results['notify'] = provision_backend_invoke($target, "eval  '_user_mail_notify(\"".$message."\", user_load($new_user_uid));'");
+    $results['notify'] = provision_backend_invoke($target, "eval  '_user_mail_notify(\"" . $message . "\", user_load($new_user_uid));'");
 
-    drush_log(t("[hosting_saas] Sent registration email to !name",  array('!name' => $client_user['name'])));
+    drush_log(t("[hosting_saas] Sent registration email to !name", array('!name' => $client_user['name'])));
   }
 
   unset($todo[$site->hosting_name]);
   variable_set('hosting_saas_utils_todo', $todo);
+}
+
+/**
+ * Implements hook_hosting_services_site_presave_alter().
+ *
+ * Enable HTTPS on new SaaS sites if possible and desired as per the
+ * configuration.
+ */
+function hosting_saas_hosting_services_site_presave_alter(&$site) {
+  $current_user_is_saas = ($GLOBALS['user']->name == HOSTING_SAAS_USER);
+  $site_is_new = !isset($site->nid);
+
+  $saas_encryption_state = variable_get('hosting_saas_https_encryption', HOSTING_HTTPS_DISABLED);
+  $saas_encryption_requested = ($saas_encryption_state != HOSTING_HTTPS_DISABLED);
+
+  if (module_exists('hosting_https') && hosting_https_is_available($site, FALSE)
+      && $current_user_is_saas && $saas_encryption_requested && $site_is_new) {
+    $site->https_enabled = $saas_encryption_state;
+  }
 }

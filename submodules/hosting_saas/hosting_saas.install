@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Install, update, and uninstall functions for Aegir SaaS.
@@ -73,6 +74,7 @@ function hosting_saas_uninstall() {
   variable_del('hosting_saas_db_server');
   variable_del('hosting_saas_master_domain');
   variable_del('hosting_saas_max_capacity');
+  variable_del('hosting_saas_https_encryption');
   variable_del('hosting_saas_target_platform');
   variable_del('hosting_saas_template_site_nid');
   variable_del('hosting_saas_template_profile');
@@ -100,4 +102,3 @@ function hosting_saas_uninstall() {
     '%role' => HOSTING_SAAS_ROLE,
   )));
 }
-
