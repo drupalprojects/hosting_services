@@ -34,6 +34,42 @@ function hosting_services_platform_list($rows = 0, $offset = 0){
 }
 
 /**
+ * Create and update platforms.
+ */
+function hosting_services_save_platform($name, $data) {
+  global $user;
+  $name = check_plain($name);
+
+  $platforms = array_flip(_hosting_get_platforms());
+  if (isset($platforms[$name])) {
+    $platform = node_load($platforms[$name]);
+    $platform = (object) array_merge((array) $platform, $data);
+  }
+  else {
+    if (!is_string($data['makefile']) && !is_string($data['git_repo'])) {
+      return FALSE;
+    }
+    $platform->type = 'platform';
+    $platform->title = $name;
+    $platform = (object) array_merge((array) $platform, $data);
+    $platform->uid = $user->uid;
+    if (!isset($platform->web_server)) {
+      $platform->web_server = HOSTING_DEFAULT_WEB_SERVER;
+    }
+    if (!isset($platform->publish_path)) {
+      $platform->publish_path = variable_get('hosting_platform_base_path', '/var/aegir/platforms/') . $name;
+    }
+  }
+
+  node_validate($platform);
+
+  $platform->status = 1;
+  node_save($platform);
+  return !empty($platform->nid) ? $platform : FALSE;
+}
+
+
+/**
  * Returns a specific platform
  */
 function hosting_services_platform_get($nid){

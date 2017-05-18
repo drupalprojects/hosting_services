@@ -38,6 +38,10 @@ function hosting_services_permission(){
     'title' => t('Get Platform'),
     'description' => t(''),
   );
+  $perms['save platform'] = array(
+    'title' => t('Save Platform'),
+    'description' => t(''),
+  );
   $perms['get site'] = array(
     'title' => t('Get Site'),
     'description' => t(''),
@@ -148,6 +152,28 @@ function hosting_services_services_resources() {
           'optional' => FALSE,
           'description' => t('Enter the node ID for the platform you wish to get'),
           'source' => array('path' => '0')
+        ),
+      ),
+    ),
+    'create' => array(
+      'callback' => 'hosting_services_save_platform',
+      'help' => t('Create a Platform'),
+      'access arguments' => array("save platform"),
+      'file' => array('type' => 'inc', 'name' => 'hosting_services.platform', 'module' => 'hosting_services'),
+      'args' => array(
+        array(
+          'name' => 'name',
+          'type' => 'string',
+          'optional' => FALSE,
+          'description' => t('The name of the platform'),
+          'source' => array('data' => 'name'),
+        ),
+        array(
+          'name' => 'data',
+          'type' => 'struct',
+          'description' => t('Must specify makefile or git info for a platform to be created.'),
+          'source' => array('data' => 'data'),
+          'optional' => FALSE,
         ),
       ),
     ),
