@@ -39,12 +39,18 @@ function hosting_saas_install() {
   }
 
   // Add required permissions for the new role.
-  $permissions = array('get site', 'save site', 'create task content');
+  $permissions = array(
+    'list profiles',
+    'get site',
+    'save site',
+    'create task content',
+  );
   user_role_grant_permissions($role->rid, $permissions);
-  drupal_set_message(t('The %role role has been granted permissions: %perm1, %perm2.', array(
+  drupal_set_message(t('The %role role has been granted permissions: %perm1, %perm2, %perm3.', array(
     '%role' => HOSTING_SAAS_ROLE,
     '%perm1' => $permissions[0],
     '%perm2' => $permissions[1],
+    '%perm3' => $permissions[2],
   )));
 
   // Set the role to be used by Services API Key Authentication.
@@ -101,4 +107,12 @@ function hosting_saas_uninstall() {
   drupal_set_message(t('Removed role %role.', array(
     '%role' => HOSTING_SAAS_ROLE,
   )));
+}
+
+/**
+ * Allow the SaaS user to list installation profiles.
+ */
+function hosting_saas_update_7001() {
+  $role = user_role_load_by_name(HOSTING_SAAS_ROLE);
+  user_role_grant_permissions($role->rid, array('list profiles'));
 }

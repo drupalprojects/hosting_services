@@ -88,27 +88,45 @@ function hosting_services_services_resources() {
     ),
   );
 
-  // Profile Services
+  // Profile Services.
   $resources['hosting_profile'] = array(
-    // List operation
+    // List operation.
     'index' => array(
-      'callback' => 'hosting_get_profiles',
+      'callback' => 'hosting_services_profile_list',
       'help' => t('List all available profiles'),
       'access arguments' => array('list profiles'),
+      'file' => array(
+        'type' => 'inc',
+        'name' => 'hosting_services.profile',
+        'module' => 'hosting_services',
+      ),
+      'args' => array(
+        array(
+          'name' => 'machine_names',
+          'type' => 'boolean',
+          'optional' => TRUE,
+          'description' => t('If set, returns profiles keyed by machine names instead of node IDs'),
+          'source' => array('param' => 'machine_names'),
+        ),
+      ),
     ),
-    // Get operation
+    // Get operation.
     'retrieve' => array(
       'callback' => 'hosting_services_profile_get',
       'help' => t('Get a profile and a list of valid platforms'),
       'access arguments' => array('get profile'),
-      'file' => array('type' => 'inc', 'name' => 'hosting_services.profile', 'module' => 'hosting_services'),
+      'file' => array(
+        'type' => 'inc',
+        'name' => 'hosting_services.profile',
+        'module' => 'hosting_services',
+      ),
       'args' => array(
         array(
           'name' => 'nid',
           'type' => 'int',
           'optional' => FALSE,
           'description' => t('Enter the node ID for the profile you wish to get'),
-          'source' => array('path' => '0')
+          'source' => array('path' => '0'),
         ),
       ),
     ),

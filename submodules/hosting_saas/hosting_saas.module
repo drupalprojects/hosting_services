@@ -324,6 +324,14 @@ function hosting_saas_default_services_endpoint() {
     ),
   );
   $endpoint->resources = array(
+    'hosting_profile' => array(
+      'alias' => 'profile',
+      'operations' => array(
+        'index' => array(
+          'enabled' => '1',
+        ),
+      ),
+    ),
     'hosting_site' => array(
       'alias' => 'site',
       'operations' => array(
