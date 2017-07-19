@@ -116,3 +116,10 @@ function hosting_saas_update_7001() {
   $role = user_role_load_by_name(HOSTING_SAAS_ROLE);
   user_role_grant_permissions($role->rid, array('list profiles'));
 }
+
+/**
+ * Remove old variable for storing post-installation task information for sites.
+ */
+function hosting_saas_update_7002() {
+  variable_del('hosting_saas_utils_todo');
+}

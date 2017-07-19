@@ -427,7 +427,7 @@ function hosting_saas_post_hosting_verify_task($task, $data) {
   }
 
   unset($todo[$site->hosting_name]);
-  variable_set('hosting_saas_utils_todo', $todo);
+  variable_set('hosting_saas_todo', $todo);
 }
 
 /**
