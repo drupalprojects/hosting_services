@@ -33,11 +33,14 @@ The endpoint uses API-key authentication by default, but **it will NOT be usable
     * drush @hm dl hosting_services services services_api_key_auth hosting_variables --destination=$(drush dd @hm:%site)/modules/contrib
 3. Enable the Aegir SaaS module.
     * drush @hm en hosting_saas
-4. Save your new automatically generated API key.
+4. Set the emanating e-mail address for new sites.  This is taken from the Aegir SaaS user just created so we need to set its e-mail address.
+    * Surf to Administration » People » Aegir SaaS » Edit.
+    * Enter your preferred e-mail address in the *E-mail address* field.  You'll probably want something like `do-not-reply@YOUR_DOMAIN`.
+5. Save your new automatically generated API key.
     * Surf to Administration » Structure » Services.
     * Click on the *Edit Authentication* item in the Operations pull-down menu of *hosting_saas*.
     * Hit the *Save* button.
-5. Configure your settings for creating new sites.
+6. Configure your settings for creating new sites.
     * Surf to Administration » Hosting » SaaS.
     * Enter/change the *Basic settings* form, and then save it.
     * Enter/change the *Site handovers* form, and then save it.
