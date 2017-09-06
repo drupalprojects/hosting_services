@@ -47,7 +47,7 @@ function hosting_services_save_site($url, $data) {
     $site->client = ((isset($data['client']) && is_numeric($data['client']))) ? $data['client'] : variable_get('hosting_default_client', 1);
     $site = (object) array_merge((array) $site, $data);
     $site->uid = $user->uid;
-    $site->site_language = 'en';
+    $site->site_language = isset($data['language']) ? $data['language'] : 'en';
     // Provide IP addresses if none have been provided.
     if (empty($site->ip_addresses)) {
       $site->ip_addresses = _hosting_services_default_ip();
