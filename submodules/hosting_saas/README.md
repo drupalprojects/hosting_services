@@ -101,7 +101,7 @@ For each of these, the following should be set as a header parameter, but you ca
     * **options[profile]**: *standard* (installation profile short name / ID, if not in settings)
     * **options[database]**: *12* (DB server node ID, if not in settings)
     * **options[platform]**: *24* (Platform node ID, if not in settings)
-    * **options[language]**: *en* (Language code for drupal installation)
+    * **options[language]**: *en* (Language code for Drupal installation)
     * **options[client_email]**: *jane.doe@example.com* (if set up in *Site handovers* configuration)
     * **options[client_name]**: *jane.doe* (if set up in *Site handovers* configuration)
     * **options[...]**: (arguments set in your *Injected variables* configuration)
