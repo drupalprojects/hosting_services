@@ -14,6 +14,14 @@ function hosting_services_permission(){
     }
   }
 
+  $perms['create client'] = array(
+    'title' => t('Create a new Client'),
+    'description' => t(''),
+  );
+  $perms['view client'] = array(
+    'title' => t('View Client'),
+    'description' => t(''),
+  );
   $perms['unsuspend client sites'] = array(
     'title' => t('Unsuspend Client Sites'),
     'description' => t(''),
