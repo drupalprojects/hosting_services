@@ -116,25 +116,28 @@ function hosting_saas_settings() {
     '#default_value' => variable_get('hosting_saas_max_capacity', '0'),
   );
 
-  $form['hosting_saas_https_encryption'] = array(
-    '#type' => 'radios',
-    '#title' => t('HTTPS encryption'),
-    '#options' => hosting_https_status_options(),
-    '#description' => t('
+  if (module_exists('hosting_https')) {
+    module_load_include('inc', 'hosting_https', 'hosting_https.nodeapi');
+    $form['hosting_saas_https_encryption'] = array(
+      '#type' => 'radios',
+      '#title' => t('HTTPS encryption'),
+      '#options' => hosting_https_status_options(),
+      '#description' => t('
 Enabling encryption will publish your sites on both HTTP and HTTPS ports,
 allowing you to redirect users to the more secure version for certain pages that
 require the additional security. Requiring encryption will automatically
 redirect all unencrypted traffic to your HTTPS sites. This functionality will
 take effect only if Aegir HTTPS is enabled, and the hosting Web server is
 using it.
-    ') . '<br/><strong>' . t("
+      ') . '<br/><strong>' . t("
 If the server is setup to generate HTTPS certificates using Let's Encrypt,
 ensure that there are existing public DNS entries for the sites (usually via a
 wildcard entry), otherwise the site installations will fail.
-    ") . '</strong>',
-    '#required' => TRUE,
-    '#default_value' => variable_get('hosting_saas_https_encryption', HOSTING_HTTPS_DISABLED),
-  );
+      ") . '</strong>',
+      '#required' => TRUE,
+      '#default_value' => variable_get('hosting_saas_https_encryption', HOSTING_HTTPS_DISABLED),
+    );
+  }
 
   return system_settings_form($form);
 }
