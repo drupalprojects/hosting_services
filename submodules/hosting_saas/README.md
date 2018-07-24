@@ -87,7 +87,7 @@ For each of these, the following should be set as a header parameter, but you ca
     * **type**: *clone*
     * **options[new_uri]**: *client1.example.com*
     * **options[database]**: *12* (DB server node ID, if not in settings)
-    * **options[platform]**: *24* (Platform node ID, if not in settings)
+    * **options[target_platform]**: *24* (Platform node ID, if not in settings)
     * **options[client_email]**: *jane.doe@example.com* (if set up in *Site handovers* configuration)
     * **options[client_name]**: *jane.doe* (if set up in *Site handovers* configuration)
     * **options[...]**: (arguments set in your *Injected variables* configuration)
